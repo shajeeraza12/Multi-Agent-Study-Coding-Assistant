@@ -1,0 +1,31 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	router(router)
+	supervisor(supervisor)
+	researcher(researcher)
+	writer(writer)
+	critiquer(critiquer)
+	code_helper(code_helper)
+	quiz_helper(quiz_helper)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> router;
+	code_helper --> __end__;
+	critiquer --> supervisor;
+	quiz_helper --> __end__;
+	researcher --> supervisor;
+	writer --> critiquer;
+	router -. &nbsp;research&nbsp; .-> supervisor;
+	router -. &nbsp;general&nbsp; .-> supervisor;
+	router -. &nbsp;code&nbsp; .-> code_helper;
+	router -. &nbsp;quiz&nbsp; .-> quiz_helper;
+	supervisor -.-> researcher;
+	supervisor -.-> writer;
+	supervisor -. &nbsp;END&nbsp; .-> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

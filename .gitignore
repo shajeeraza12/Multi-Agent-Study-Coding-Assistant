@@ -1,0 +1,15 @@
+# Python env and caches
+.venv/
+__pycache__/
+*.pyc
+
+# Local data & indices
+chromadb/
+notes/
+assets/
+
+# Environment & secrets
+.env
+
+# Misc
+.DS_Store

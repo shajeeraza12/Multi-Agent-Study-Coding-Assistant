@@ -68,17 +68,17 @@ multi-agent-research-assistant/
 
 ## Key Features
 
-✨ **7 Specialized Agents** - Each with distinct roles and responsibilities  
-🔄 **Intelligent Routing** - Automatic intent classification  
-📚 **Long-term Memory** - Persistent knowledge storage via Chroma + file system  
-🔍 **Web Search Integration** - Real-time information via Tavily API  
-💻 **Code Execution** - Run Python, C, and C++ code safely  
-🎓 **Educational Tools** - Quiz and checklist generation  
-🛡️ **Safety Features** - Prompt injection protection, schema validation, error handling  
-📡 **REST API** - FastAPI backend with Swagger documentation  
-🎨 **User Interface** - Streamlit web application  
-📊 **Graph Visualization** - Mermaid diagram generation  
-🔀 **Conditional Workflows** - Supervisor patterns with dynamic routing  
+**7 Specialized Agents** - Each with distinct roles and responsibilities  
+**Intelligent Routing** - Automatic intent classification  
+**Long-term Memory** - Persistent knowledge storage via Chroma + file system  
+**Web Search Integration** - Real-time information via Tavily API  
+**Code Execution** - Run Python, C, and C++ code safely  
+**Educational Tools** - Quiz and checklist generation  
+**Safety Features** - Prompt injection protection, schema validation, error handling  
+**REST API** - FastAPI backend with Swagger documentation  
+**User Interface** - Streamlit web application  
+**Graph Visualization** - Mermaid diagram generation  
+**Conditional Workflows** - Supervisor patterns with dynamic routing  
 
 ---
 
@@ -102,15 +102,15 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 
 ## Technical Requirements & Compliance
 
-### Lab 2 Requirements ✅
+### Lab 2 Requirements 
 
-**Task 1 - Architecture Design: ✅ Complete**
+**Task 1 - Architecture Design:**
 - Agent descriptions and responsibilities documented
 - MAS patterns (Supervisor + Router) clearly implemented
 - Control flow and data flow documented in this README
 - Tool calling and memory usage explicitly detailed
 
-**Task 2 - Implementation: ✅ Complete**
+**Task 2 - Implementation:**
 - Shared state (TypedDict: ChatState) with all required fields
 - 7 agent nodes fully implemented in LangGraph
 - Tool integration (Tavily, code execution, PDF retrieval)
@@ -118,49 +118,49 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 - Memory management (short-term and long-term)
 - Runnable demo (Streamlit app + FastAPI)
 
-**Task 3 - Experiments: ✅ Testable**
+**Task 3 - Experiments:**
 - System supports diverse query types (theoretical, design, coding, productivity)
 - Agent activation and tool usage can be traced through logs
 
-**Task 4 - Reflection: ✅ Included**
+**Task 4 - Reflection:**
 - See Reflection & Future Work section
 
 ---
 
-### Course Project Requirements ✅
+### Course Project Requirements 
 
 **System Composition**
-- ✅ **7 agents with distinct roles** (exceeds 3 minimum): Router, Supervisor, Researcher, Writer, Critiquer, Code Helper, Quiz Helper
-- ✅ **Defined communication** via shared state (TypedDict) and conditional edges
-- ✅ **Clear functional responsibilities** for each agent documented below
+- **7 agents with distinct roles** (exceeds 3 minimum): Router, Supervisor, Researcher, Writer, Critiquer, Code Helper, Quiz Helper
+- **Defined communication** via shared state (TypedDict) and conditional edges
+- **Clear functional responsibilities** for each agent documented below
 
 **Tools & Capabilities**
-- ✅ **3+ tools integrated**: Tavily (web search), run_code (Python/C/C++ execution), RAG (PDF/notes retrieval)
-- ✅ **Dynamic tool selection** based on agent type and query intent
-- ✅ **LangChain + LangGraph integration** for seamless orchestration
+- **3+ tools integrated**: Tavily (web search), run_code (Python/C/C++ execution), RAG (PDF/notes retrieval)
+- **Dynamic tool selection** based on agent type and query intent
+- **LangChain + LangGraph integration** for seamless orchestration
 
 **Memory**
-- ✅ **Short-term memory (mandatory)**: Chat history in messages field maintains conversation context
-- ✅ **Long-term memory (mandatory)**: Chroma vector database with embeddings + JSON-based notes storage for persistent knowledge
-- ✅ **Shared memory (encouraged)**: Blackboard pattern via shared_memory module enables collaborative reasoning
-- ✅ **Agent read/write capability**: `save_long_term_note()` and `retrieve_long_term_context()` functions
+- **Short-term memory**: Chat history in messages field maintains conversation context
+- **Long-term memory**: Chroma vector database with embeddings + JSON-based notes storage for persistent knowledge
+- **Shared memory**: Blackboard pattern via shared_memory module enables collaborative reasoning
+- **Agent read/write capability**: `save_long_term_note()` and `retrieve_long_term_context()` functions
 
 **Reasoning & Coordination**
-- ✅ **ReAct reasoning loop** in supervisor and router agents for intelligent decision-making
-- ✅ **Goal decomposition** (research → write → critique) breaks complex tasks into manageable steps
-- ✅ **Multi-agent coordination** via supervisor orchestration manages workflow state transitions
+- **ReAct reasoning loop** in supervisor and router agents for intelligent decision-making
+- **Goal decomposition** (research → write → critique) breaks complex tasks into manageable steps
+- **Multi-agent coordination** via supervisor orchestration manages workflow state transitions
 
 **Backend & Deployment**
-- ✅ **FastAPI backend** (api.py) with 3 endpoints: /health, /chat, /upload_pdf
-- ✅ **Swagger UI** auto-generated at /docs for interactive testing
-- ✅ **Docker-compatible** configuration and environment setup
-- ✅ **Reproducible** with requirements.txt + pyproject.toml
+- **FastAPI backend** (api.py) with 3 endpoints: /health, /chat, /upload_pdf
+- **Swagger UI** auto-generated at /docs for interactive testing
+- **Docker-compatible** configuration and environment setup
+- **Reproducible** with requirements.txt + pyproject.toml
 
 **Reliability & Safety**
-- ✅ **Pydantic validation** for RouterDecision and ToolCallSpec schema enforcement
-- ✅ **Prompt injection protection** detects and neutralizes malicious user inputs
-- ✅ **Error handling** in all agents with fallback mechanisms
-- ✅ **Code execution safeguards** with timeout protection and banned operations
+- **Pydantic validation** for RouterDecision and ToolCallSpec schema enforcement
+- **Prompt injection protection** detects and neutralizes malicious user inputs
+- **Error handling** in all agents with fallback mechanisms
+- **Code execution safeguards** with timeout protection and banned operations
 
 ---
 
@@ -338,7 +338,7 @@ Health check endpoint to verify system status.
 
 ## Agent Roles & Responsibilities
 
-### 🔀 Router Agent
+### Router Agent
 
 **Purpose**: Classify user intent and route to appropriate workflow
 
@@ -353,7 +353,7 @@ Uses heuristic patterns combined with LLM reasoning to identify user intent, ena
 
 ---
 
-### 🎯 Supervisor Agent
+### Supervisor Agent
 
 **Purpose**: Orchestrate multi-agent workflow and make strategic decisions
 
@@ -369,7 +369,7 @@ Implements a research-write-review cycle where the supervisor monitors progress 
 
 ---
 
-### 🔍 Researcher Agent
+### Researcher Agent
 
 **Purpose**: Gather comprehensive information from web and knowledge base
 
@@ -384,7 +384,7 @@ Leverages both real-time web search and persistent knowledge base to provide wel
 
 ---
 
-### ✍️ Writer Agent
+### Writer Agent
 
 **Purpose**: Synthesize findings into coherent, well-structured responses
 
@@ -399,7 +399,7 @@ Transforms raw information into polished, readable content that directly address
 
 ---
 
-### 🔎 Critiquer Agent
+### Critiquer Agent
 
 **Purpose**: Quality assurance and constructive feedback mechanism
 
@@ -414,7 +414,7 @@ Evaluates outputs across multiple dimensions to ensure high-quality, well-reason
 
 ---
 
-### 💻 Code Helper Agent
+### Code Helper Agent
 
 **Purpose**: Assist with coding questions and provide safe code execution
 
@@ -429,7 +429,7 @@ Implements comprehensive safeguards including operation whitelisting, timeout en
 
 ---
 
-### 🎓 Quiz Helper Agent
+### Quiz Helper Agent
 
 **Purpose**: Generate educational content and learning tools
 
@@ -565,7 +565,7 @@ Implements classic "blackboard" architecture where agents communicate through sh
 
 ## Reflection & Future Work
 
-### What Worked Well ✅
+### What Worked Well 
 
 1. **Agent Specialization**: Each agent excels at its specific domain, enabling focused optimization
 2. **Supervisor Orchestration**: Intelligent routing significantly reduces failure cases and improves quality
@@ -574,7 +574,7 @@ Implements classic "blackboard" architecture where agents communicate through sh
 5. **Tool Integration**: Seamless Tavily + code execution + RAG integration creates powerful capabilities
 6. **Error Resilience**: Fallback mechanisms ensure graceful degradation instead of crashes
 
-### Challenges & Limitations ⚠️
+### Challenges & Limitations 
 
 1. **Revision Loop Efficiency**: Sometimes gets stuck in minor revision cycles (mitigated with max iterations)
 2. **Context Window Constraints**: Token limits on very large documents (mitigated with summarization)
@@ -582,7 +582,7 @@ Implements classic "blackboard" architecture where agents communicate through sh
 4. **Code Execution Tradeoff**: Balance between capability and security limits some advanced operations
 5. **Memory Scaling**: Vector DB performance with very large document collections needs optimization
 
-### Future Improvements 🚀
+### Future Improvements 
 
 **Advanced Reasoning**:
 - Implement multi-turn agent communication for collaborative problem-solving
@@ -623,7 +623,6 @@ Implements classic "blackboard" architecture where agents communicate through sh
 - Retrieval-augmented planning for knowledge-aware task decomposition
 
 ---
-
-**Status**: ✅ Production Ready  
+ 
 **Version**: 1.0.0  
 **Last Updated**: December 2024

@@ -95,7 +95,7 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 5. **Shared State Management** enables seamless communication via TypedDict
 6. **Conditional Edges** route agents based on task progress and decisions
 
-![Multi-Agent Workflow](assets/graph.jpg)  
+![Multi-Agent Workflow](assets/graph.png)  
 *LangGraph architecture showing multi-agent collaboration and conditional routing*
 
 ---

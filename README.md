@@ -127,43 +127,6 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 
 ---
 
-### Course Project Requirements 
-
-**System Composition**
-- **7 agents with distinct roles** (exceeds 3 minimum): Router, Supervisor, Researcher, Writer, Critiquer, Code Helper, Quiz Helper
-- **Defined communication** via shared state (TypedDict) and conditional edges
-- **Clear functional responsibilities** for each agent documented below
-
-**Tools & Capabilities**
-- **3+ tools integrated**: Tavily (web search), run_code (Python/C/C++ execution), RAG (PDF/notes retrieval)
-- **Dynamic tool selection** based on agent type and query intent
-- **LangChain + LangGraph integration** for seamless orchestration
-
-**Memory**
-- **Short-term memory**: Chat history in messages field maintains conversation context
-- **Long-term memory**: Chroma vector database with embeddings + JSON-based notes storage for persistent knowledge
-- **Shared memory**: Blackboard pattern via shared_memory module enables collaborative reasoning
-- **Agent read/write capability**: `save_long_term_note()` and `retrieve_long_term_context()` functions
-
-**Reasoning & Coordination**
-- **ReAct reasoning loop** in supervisor and router agents for intelligent decision-making
-- **Goal decomposition** (research → write → critique) breaks complex tasks into manageable steps
-- **Multi-agent coordination** via supervisor orchestration manages workflow state transitions
-
-**Backend & Deployment**
-- **FastAPI backend** (api.py) with 3 endpoints: /health, /chat, /upload_pdf
-- **Swagger UI** auto-generated at /docs for interactive testing
-- **Docker-compatible** configuration and environment setup
-- **Reproducible** with requirements.txt + pyproject.toml
-
-**Reliability & Safety**
-- **Pydantic validation** for RouterDecision and ToolCallSpec schema enforcement
-- **Prompt injection protection** detects and neutralizes malicious user inputs
-- **Error handling** in all agents with fallback mechanisms
-- **Code execution safeguards** with timeout protection and banned operations
-
----
-
 ## Installation & Setup
 
 ### Prerequisites

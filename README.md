@@ -100,33 +100,6 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 
 ---
 
-## Technical Requirements & Compliance
-
-### Lab 2 Requirements 
-
-**Task 1 - Architecture Design:**
-- Agent descriptions and responsibilities documented
-- MAS patterns (Supervisor + Router) clearly implemented
-- Control flow and data flow documented in this README
-- Tool calling and memory usage explicitly detailed
-
-**Task 2 - Implementation:**
-- Shared state (TypedDict: ChatState) with all required fields
-- 7 agent nodes fully implemented in LangGraph
-- Tool integration (Tavily, code execution, PDF retrieval)
-- Handoff via conditional edges based on state
-- Memory management (short-term and long-term)
-- Runnable demo (Streamlit app + FastAPI)
-
-**Task 3 - Experiments:**
-- System supports diverse query types (theoretical, design, coding, productivity)
-- Agent activation and tool usage can be traced through logs
-
-**Task 4 - Reflection:**
-- See Reflection & Future Work section
-
----
-
 ## Installation & Setup
 
 ### Prerequisites

@@ -10,7 +10,6 @@ A sophisticated **Multi-Agent System (MAS)** built with **LangChain** and **Lang
 - [Project Structure](#project-structure)
 - [Key Features](#key-features)
 - [System Architecture](#system-architecture)
-- [Technical Requirements & Compliance](#technical-requirements--compliance)
 - [Installation & Setup](#installation--setup)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)

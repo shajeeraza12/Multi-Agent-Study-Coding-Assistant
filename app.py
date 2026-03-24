@@ -17,12 +17,28 @@ st.set_page_config(
 
 
 def check_api_keys():
-    qwen_key = os.environ.get("LITELLM_API_KEY")
+    """Check for required API keys based on LLM provider configuration."""
+    llm_provider = os.environ.get("LLM_PROVIDER", "ollama").lower()
     tavily_key = os.environ.get("TAVILY_API_KEY")
-    if not qwen_key or not tavily_key:
-        st.error("API keys not found. Set LITELLM_API_KEY and TAVILY_API_KEY in .env.")
+    
+    # Tavily is always required for web search
+    if not tavily_key:
+        st.error("TAVILY_API_KEY not found. Please set it in your .env file.")
         return False
-    return True
+    
+    # Check LLM configuration based on provider
+    if llm_provider == "ollama":
+        # For Ollama, we just need to verify the base URL is configured
+        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+        st.info(f"Using Ollama at: {ollama_url}")
+        return True
+    else:
+        # For LiteLLM/university server, check for API key
+        litellm_key = os.environ.get("LITELLM_API_KEY")
+        if not litellm_key:
+            st.error("LITELLM_API_KEY not found. Please set it in your .env file.")
+            return False
+        return True
 
 
 st.title("Multi-Agent Study & Coding Assistant")
@@ -86,6 +102,11 @@ if user_input:
         "code_snippet": "",
         "code_answer": "",
         "quiz_output": "",
+        # Relevancy tracking initialization
+        "relevancy_checks": [],
+        "total_checks": 0,
+        "relevant_count": 0,
+        "irrelevant_count": 0,
     }
 
     config = {"recursion_limit": max_iterations}

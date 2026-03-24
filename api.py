@@ -52,11 +52,20 @@ def health_check():
 
 @api.post("/chat", response_model=ChatResponse, tags=["chat"])
 def chat(req: ChatRequest):
-    # Basic API-key check (optional)
-    if not os.environ.get("LITELLM_API_KEY") or not os.environ.get("TAVILY_API_KEY"):
+    # Basic API-key check based on LLM provider
+    llm_provider = os.environ.get("LLM_PROVIDER", "ollama").lower()
+    tavily_key = os.environ.get("TAVILY_API_KEY")
+    
+    if not tavily_key:
         raise HTTPException(
             status_code=500,
-            detail="Backend is missing LITELLM_API_KEY or TAVILY_API_KEY.",
+            detail="Backend is missing TAVILY_API_KEY.",
+        )
+    
+    if llm_provider != "ollama" and not os.environ.get("LITELLM_API_KEY"):
+        raise HTTPException(
+            status_code=500,
+            detail="Backend is missing LITELLM_API_KEY.",
         )
 
     # Use last user message as main_task
@@ -83,6 +92,11 @@ def chat(req: ChatRequest):
         "code_snippet": "",
         "code_answer": "",
         "quiz_output": "",
+        # Relevancy tracking initialization
+        "relevancy_checks": [],
+        "total_checks": 0,
+        "relevant_count": 0,
+        "irrelevant_count": 0,
     }
 
     config = {"recursion_limit": req.max_steps}

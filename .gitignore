@@ -1,15 +1,7 @@
-# Python env and caches
-.venv/
+venv/
 __pycache__/
 *.pyc
-
-# Local data & indices
-chromadb/
-notes/
-assets/
-
-# Environment & secrets
 .env
-
-# Misc
-.DS_Store
+chroma_db/
+memory/notes_db/
+notes/

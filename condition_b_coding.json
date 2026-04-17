@@ -1,0 +1,250 @@
+{
+  "total_queries": 10,
+  "overall_relevance_rate": 100.0,
+  "avg_reviews_per_query": 2.0,
+  "agent_performance": {
+    "router": {
+      "total_checks": 10,
+      "relevant": 10,
+      "relevance_rate": 100.0
+    },
+    "code_helper": {
+      "total_checks": 10,
+      "relevant": 10,
+      "relevance_rate": 100.0
+    }
+  },
+  "evaluation_duration": 869.2046387195587,
+  "queries": [
+    {
+      "query": "Write a Python function that finds all duplicate elements in a list and returns them. It should run in O(n) time complexity.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 3.404343008995056,
+      "avg_confidence": 0.5,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:45:27.299700"
+    },
+    {
+      "query": "Fix this buggy binary search implementation that returns wrong results for edge cases: def binary_search(arr, target): lo, hi = 0, len(arr); while lo < hi: mid = (lo+hi)//2; if arr[mid] == target: return mid; elif arr[mid] < target: lo = mid; else: hi = mid; return -1",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 5.227517008781433,
+      "avg_confidence": 0.5,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:46:42.529789"
+    },
+    {
+      "query": "Implement a thread-safe singleton pattern in Python that works correctly under concurrent access.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 4.122603058815002,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:47:55.924501"
+    },
+    {
+      "query": "Write a Python decorator that retries a function up to 3 times with exponential backoff if it raises an exception.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 4.051589488983154,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:49:26.203578"
+    },
+    {
+      "query": "Debug this recursive fibonacci function that causes a RecursionError for large inputs and rewrite it iteratively.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 3.8252570629119873,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:50:46.675234"
+    },
+    {
+      "query": "Implement a LRU cache class in Python with get and put methods, both running in O(1) time.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 5.091710686683655,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:52:26.552122"
+    },
+    {
+      "query": "Write a context manager in Python that times the execution of a code block and prints the duration.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 3.880826950073242,
+      "avg_confidence": 0.5,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:53:38.296999"
+    },
+    {
+      "query": "Fix this merge sort implementation that fails on lists with duplicate values.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 4.612993836402893,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:55:32.280684"
+    },
+    {
+      "query": "Write a Python generator function that yields all permutations of a given list without using itertools.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 4.152096390724182,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:56:40.039522"
+    },
+    {
+      "query": "Implement a simple rate limiter class that allows at most N requests per second.",
+      "total_checks": 2,
+      "relevant_count": 2,
+      "irrelevant_count": 0,
+      "relevance_rate": 100.0,
+      "avg_review_duration": 4.201655387878418,
+      "avg_confidence": 0.475,
+      "high_confidence_rate": 50.0,
+      "agent_breakdown": {
+        "router": {
+          "total": 1,
+          "relevant": 1
+        },
+        "code_helper": {
+          "total": 1,
+          "relevant": 1
+        }
+      },
+      "workflow_steps": 2,
+      "final_answer_relevant": true,
+      "timestamp": "2026-04-17T03:58:22.865399"
+    }
+  ]
+}

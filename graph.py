@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, List
+from typing import TypedDict, Annotated, List, Dict
 import operator
 
 from langgraph.graph import StateGraph, END
@@ -15,9 +15,13 @@ from agents import (
     check_relevancy,
 )
 
+# Agent type classification for review mode routing
+ORCHESTRATION_AGENTS = {"router", "supervisor", "critiquer"}
+CONTENT_AGENTS = {"researcher", "writer", "code_helper", "quiz_helper"}
+
 
 class ChatState(TypedDict):
-    # Chat history + high‑level intent
+    # Chat history + high-level intent
     messages: Annotated[List[dict], operator.add]
     intent: str
     answer_mode: str
@@ -44,6 +48,7 @@ class ChatState(TypedDict):
     total_checks: int
     relevant_count: int
     irrelevant_count: int
+    agent_type_relevance: Dict[str, Dict[str, int]]
 
 
 # Instantiate chains/agents
@@ -60,42 +65,44 @@ reviewer_agent = create_reviewer_agent()
 def _review_output(state: ChatState, output: str, agent_name: str) -> dict:
     """
     Helper function to review an agent's output and update relevancy statistics.
-    Returns the review result dictionary.
+    Routes to orchestration or content review mode based on agent type.
     """
     import time
     start_time = time.time()
-    
-    review_result = reviewer_agent(state, output, agent_name)
+
+    # Route to correct review mode
+    mode = "orchestration" if agent_name in ORCHESTRATION_AGENTS else "content"
+
+    review_result = reviewer_agent(state, output, agent_name, mode=mode)
     review_duration = time.time() - start_time
-    
-    # Calculate updated statistics
+
+    # Update running totals
     current_total = state.get("total_checks", 0) + 1
     current_relevant = state.get("relevant_count", 0) + (1 if review_result["is_relevant"] else 0)
     current_irrelevant = state.get("irrelevant_count", 0) + (0 if review_result["is_relevant"] else 1)
-    
-    # Calculate relevance score by agent type for research analysis
-    agent_type_relevance = state.get("agent_type_relevance", {})
+
+    # Safely copy and update agent_type_relevance
+    agent_type_relevance = dict(state.get("agent_type_relevance") or {})
     if agent_name not in agent_type_relevance:
         agent_type_relevance[agent_name] = {"total": 0, "relevant": 0}
     agent_type_relevance[agent_name]["total"] += 1
     if review_result["is_relevant"]:
         agent_type_relevance[agent_name]["relevant"] += 1
-    
-    # Enhanced logging for research
+
     relevance_rate = (current_relevant / current_total) * 100 if current_total > 0 else 0
-    print(f"[RELEVANCY STATS] Total: {current_total} | Relevant: {current_relevant} | Irrelevant: {current_irrelevant} | Rate: {relevance_rate:.1f}%")
-    print(f"[REVIEW METRICS] Agent: {agent_name} | Duration: {review_duration:.2f}s | Decision: {'PASS' if review_result['is_relevant'] else 'FAIL'}")
-    
-    # Store enhanced review data
+    print(f"[RELEVANCY STATS] Total: {current_total} | Relevant: {current_relevant} | "
+          f"Irrelevant: {current_irrelevant} | Rate: {relevance_rate:.1f}% | Mode: {mode}")
+
     enhanced_review = {
         **review_result,
         "agent_name": agent_name,
+        "mode": mode,
         "output_length": len(output),
         "review_duration": review_duration,
         "timestamp": time.time(),
         "workflow_step": current_total
     }
-    
+
     return {
         "relevancy_checks": [enhanced_review],
         "total_checks": current_total,

@@ -13,7 +13,6 @@ A sophisticated **Multi-Agent System (MAS)** built with **LangChain** and **Lang
 - [Installation \& Setup](#installation--setup)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
 - [ABC Benchmark (SWE-bench)](#abc-benchmark-swe-bench)
 - [API Documentation](#api-documentation)
 - [Agent Roles](#agent-roles)
@@ -62,8 +61,6 @@ multi-agent-study-coding-assistant/
 │   ├── shared_memory.py         # Long-term memory management
 │   ├── notes_memory.py          # Notes memory module
 │   └── rag.py                   # Vector DB + PDF retrieval
-├── tests/
-│   └── test_tools.py            # Unit tests
 ├── requirements.txt             # Python dependencies
 ├── pyproject.toml               # Project configuration
 ├── dockerfile                   # Docker configuration for Condition C
@@ -106,9 +103,9 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 
 | Condition | Description | Runtime |
 |-----------|-------------|---------|
-| A | Baseline (no reviewer) | Local (Python) |
-| B | With Reviewer Agent | Local (Python) |
-| C | With OpenHands Agent | Docker |
+| A | Baseline (no reviewer) | Local (Python 3.12) |
+| B | With Reviewer Agent | Local (Python 3.12) |
+| C | With OpenHands Agent | Local (Python 3.12 + OpenRouter/MiniMax) |
 
 ---
 
@@ -116,10 +113,10 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 
 ### Prerequisites
 
-- **Python**: 3.10 or higher
+- **Python**: 3.12 (required)
 - **pip** for dependency management
 - **Git** for cloning the repository
-- **Docker** (for Condition C only)
+- **Linux** (required for Condition C)
 
 ### Step 1: Clone the Repository
 
@@ -168,7 +165,7 @@ MODEL_NAME=qwen2.5:14b
 TAVILY_API_KEY=your_tavily_api_key_here
 ```
 
-#### Option B: Using OpenRouter (Cloud)
+#### Option C: Using OpenRouter (Cloud) with MiniMax LLM (for Condition C)
 
 ```bash
 # LLM Provider
@@ -177,7 +174,7 @@ LLM_PROVIDER=litellm
 # OpenRouter Configuration (for cloud LLM access)
 LITELLM_BASE_URL=https://openrouter.ai/v1
 OPENROUTER_API_KEY=your_openrouter_api_key_here
-MODEL_NAME=anthropic/claude-3-sonnet
+MODEL_NAME=minimax/minimax-long
 
 # Tavily Search API (for web search)
 TAVILY_API_KEY=your_tavily_api_key_here
@@ -247,30 +244,14 @@ python visualize_graph.py
 
 ---
 
-## Running Tests
-
-Run the unit tests with pytest:
-
-```bash
-pytest tests/
-```
-
-Run with verbose output:
-
-```bash
-pytest -v tests/
-```
-
----
-
 ## ABC Benchmark (SWE-bench)
 
 Run the ABC benchmark to evaluate the multi-agent system on SWE-bench coding tasks:
 
 ### Prerequisites
 
-- **Conditions A & B**: Python virtual environment with dependencies installed
-- **Condition C**: Docker Desktop installed and running + Ollama
+- **Conditions A & B**: Python 3.12 virtual environment with dependencies installed
+- **Condition C**: Python 3.12 on Linux + OpenRouter API key (MiniMax LLM)
 
 ### Running Each Condition
 
@@ -286,11 +267,7 @@ python evaluate_swe.py --variant a --output results_a.json --sample
 # Condition B (With Reviewer Agent - hallucination detection)
 python evaluate_swe.py --variant b --output results_b.json --sample
 
-# Condition C (With OpenHands - requires Docker)
-# First start OpenHands Docker container:
-docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
-
-# Then run:
+# Condition C (With OpenHands SDK - Linux only, Python 3.12)
 python evaluate_swe.py --variant c --output results_c.json --sample
 ```
 

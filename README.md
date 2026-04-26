@@ -24,7 +24,7 @@ A sophisticated **Multi-Agent System (MAS)** built with **LangChain** and **Lang
 
 ## Project Overview
 
-This project implements a Multi-Agent System for research, learning, and coding assistance. It fulfills Lab 2 requirements for designing and implementing a multi-agent system with LangChain & LangGraph.
+This project implements a Multi-Agent System for research, learning, and coding assistance.
 
 ### What It Does
 

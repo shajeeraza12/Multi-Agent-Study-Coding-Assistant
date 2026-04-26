@@ -1,36 +1,37 @@
-# Multi-Agent Study & Coding Assistant 🧠
+# Multi-Agent Study & Coding Assistant
 
-A sophisticated **Multi-Agent System (MAS)** built with **LangChain** and **LangGraph** that leverages multiple specialized AI agents to assist with research, learning, coding, and productivity tasks. The system demonstrates advanced agent coordination, reasoning loops, and intelligent tool integration.
+A sophisticated **Multi-Agent System (MAS)** built with **LangChain** and **LangGraph** that leverages multiple specialized AI agents to assist with research, learning, coding, and productivity tasks. The system demonstrates advanced agent coordination, reasoning loops, intelligent tool integration, and includes a **Reviewer Agent** for hallucination detection on coding tasks.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Project Structure](#project-structure)
 - [Key Features](#key-features)
 - [System Architecture](#system-architecture)
-- [Installation & Setup](#installation--setup)
+- [Installation \& Setup](#installation--setup)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
+- [Running Tests](#running-tests)
+- [ABC Benchmark (SWE-bench)](#abc-benchmark-swe-bench)
 - [API Documentation](#api-documentation)
-- [Agent Roles & Responsibilities](#agent-roles--responsibilities)
-- [Tools & Capabilities](#tools--capabilities)
+- [Agent Roles](#agent-roles)
+- [Hallucination Detection](#hallucination-detection)
 - [Memory Management](#memory-management)
-- [Reflection & Future Work](#reflection--future-work)
 
 ---
 
 ## Project Overview
 
-This project fulfills **Lab 2: Designing and Implementing a Multi-Agent System with LangChain & LangGraph** and the **Course Project Guidelines** for building an LLM-based multi-agent system.
+This project implements a Multi-Agent System for research, learning, and coding assistance. It fulfills Lab 2 requirements for designing and implementing a multi-agent system with LangChain & LangGraph.
 
 ### What It Does
 
 The assistant receives diverse user queries and intelligently routes them to specialized agents:
 
 - **Research queries** → Research + Writer + Critiquer workflow
-- **Coding questions** → Code helper with Python/C++ execution
+- **Coding questions** → Code helper with Python/C++ execution + Reviewer Agent
 - **Study aids** → Quiz/checklist generation
 - **General questions** → Flexible research-based answering
 
@@ -43,41 +44,48 @@ A single generic chatbot cannot effectively handle the specialized reasoning req
 ## Project Structure
 
 ```
-multi-agent-research-assistant/
-├── agents.py                    # 7 agent implementations
-├── graph.py                     # LangGraph workflow (7 nodes)
+multi-agent-study-coding-assistant/
+├── agents.py                    # 8 agent implementations (including Reviewer)
+├── graph.py                     # LangGraph workflow with ABC variants
 ├── prompts.py                   # LLM prompt templates
 ├── tools.py                     # Code execution utilities
 ├── api.py                       # FastAPI backend with endpoints
 ├── app.py                       # Streamlit web interface
+├── main.py                      # CLI entry point
 ├── visualize_graph.py           # Graph visualization script
-├── test_tools.py                # Unit tests
+├── evaluate_swe.py              # SWE-bench evaluation script
+├── openhands_agent.py           # OpenHands agent for Condition C
+├── openhands_client.py          # OpenHands HTTP client
+├── swe_bench_runner.py          # SWE-bench benchmark runner
+├── run_benchmark.py             # ABC benchmark runner
 ├── memory/
 │   ├── shared_memory.py         # Long-term memory management
+│   ├── notes_memory.py          # Notes memory module
 │   └── rag.py                   # Vector DB + PDF retrieval
-├── notes/                       # PDF storage directory
-├── assets/                      # Graph diagrams and visualizations
+├── tests/
+│   └── test_tools.py            # Unit tests
 ├── requirements.txt             # Python dependencies
-├── pyproject.toml              # Poetry configuration
-├── .env                        # Environment variables (not in repo)
-└── README.md                   # This file
+├── pyproject.toml               # Project configuration
+├── dockerfile                   # Docker configuration for Condition C
+├── .dockerignore                # Docker ignore file
+└── README.md                    # This file
 ```
 
 ---
 
 ## Key Features
 
-**7 Specialized Agents** - Each with distinct roles and responsibilities  
-**Intelligent Routing** - Automatic intent classification  
-**Long-term Memory** - Persistent knowledge storage via Chroma + file system  
-**Web Search Integration** - Real-time information via Tavily API  
-**Code Execution** - Run Python, C, and C++ code safely  
-**Educational Tools** - Quiz and checklist generation  
-**Safety Features** - Prompt injection protection, schema validation, error handling  
-**REST API** - FastAPI backend with Swagger documentation  
-**User Interface** - Streamlit web application  
-**Graph Visualization** - Mermaid diagram generation  
-**Conditional Workflows** - Supervisor patterns with dynamic routing  
+- **8 Specialized Agents** - Router, Supervisor, Researcher, Writer, Critiquer, Code Helper, Quiz Helper, Reviewer
+- **Intelligent Routing** - Automatic intent classification
+- **Reviewer Agent** - Hallucination detection and quality assessment
+- **Long-term Memory** - Persistent knowledge storage via Chroma + file system
+- **Web Search Integration** - Real-time information via Tavily API
+- **Code Execution** - Run Python, C, and C++ code safely
+- **Educational Tools** - Quiz and checklist generation
+- **Safety Features** - Prompt injection protection, schema validation, error handling
+- **REST API** - FastAPI backend with Swagger documentation
+- **User Interface** - Streamlit web application
+- **ABC Benchmark** - SWE-bench evaluation with three conditions (A/B/C)
 
 ---
 
@@ -90,12 +98,17 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 1. **Router Agent** classifies incoming user queries by intent (research, code, quiz, or general)
 2. **Intent-based Routing** directs the query to appropriate specialist agents
 3. **Supervisor Agent** orchestrates complex workflows (research → write → critique)
-4. **Specialist Agents** (Researcher, Writer, Critiquer, Code Helper, Quiz Helper) process tasks
+4. **Specialist Agents** process tasks with the help of the Reviewer Agent
 5. **Shared State Management** enables seamless communication via TypedDict
 6. **Conditional Edges** route agents based on task progress and decisions
 
-![Multi-Agent Workflow](assets/graph.png)  
-*LangGraph architecture showing multi-agent collaboration and conditional routing*
+### ABC Conditions
+
+| Condition | Description | Runtime |
+|-----------|-------------|---------|
+| A | Baseline (no reviewer) | Local (Python) |
+| B | With Reviewer Agent | Local (Python) |
+| C | With OpenHands Agent | Docker |
 
 ---
 
@@ -104,14 +117,15 @@ The system implements a **Supervisor + Router** multi-agent pattern where:
 ### Prerequisites
 
 - **Python**: 3.10 or higher
-- **pip** or **poetry** for dependency management
+- **pip** for dependency management
 - **Git** for cloning the repository
+- **Docker** (for Condition C only)
 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd multi-agent-research-assistant
+git clone https://github.com/shajeeraza12/Multi-Agent-Study-Coding-Assistant.git
+cd Multi-Agent-Study-Coding-Assistant
 ```
 
 ### Step 2: Create Virtual Environment
@@ -119,26 +133,16 @@ cd multi-agent-research-assistant
 ```bash
 # Using venv
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+.\venv\Scripts\activate  # On Windows
 
-# Or using conda
-conda create -n multi-agent python=3.10
-conda activate multi-agent
+# Or on Linux/Mac
+source venv/bin/activate
 ```
 
 ### Step 3: Install Dependencies
 
-**Option A: Using pip**
-
 ```bash
 pip install -r requirements.txt
-```
-
-**Option B: Using poetry**
-
-```bash
-pip install poetry
-poetry install
 ```
 
 ---
@@ -149,25 +153,57 @@ poetry install
 
 Create a `.env` file in the project root with the following configuration:
 
+#### Option A: Using Ollama (Local)
+
 ```bash
-# vLLM Configuration
-LITELLM_BASE_URL=http://a6k2.dgx:34000/v1
-LITELLM_API_KEY=your_litellm_api_key_here
-MODEL_NAME=qwen3-32b
+# LLM Provider
+LLM_PROVIDER=ollama
+
+# Ollama Configuration (OpenAI-compatible API)
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_API_KEY=ollama
+MODEL_NAME=qwen2.5:14b
 
 # Tavily Search API (for web search)
 TAVILY_API_KEY=your_tavily_api_key_here
 ```
 
-### Getting Your Tavily API Key
+#### Option B: Using OpenRouter (Cloud)
 
-Tavily provides a **free tier** for API access:
+```bash
+# LLM Provider
+LLM_PROVIDER=litellm
 
+# OpenRouter Configuration (for cloud LLM access)
+LITELLM_BASE_URL=https://openrouter.ai/v1
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+MODEL_NAME=anthropic/claude-3-sonnet
+
+# Tavily Search API (for web search)
+TAVILY_API_KEY=your_tavily_api_key_here
+```
+
+### Getting API Keys
+
+**Tavily API Key**:
 1. Visit [tavily.com](https://tavily.com/)
 2. Sign up for a free account
 3. Navigate to the API keys section in your dashboard
 4. Copy your API key
 5. Paste it in your `.env` file as `TAVILY_API_KEY=tvly-xxxxx`
+
+**OpenRouter API Key**:
+1. Visit [openrouter.ai](https://openrouter.ai/)
+2. Sign up for an account
+3. Navigate to the API keys section
+4. Create a new API key
+5. Add credits to your account
+6. Use in `.env` as `OPENROUTER_API_KEY=sk-or-xxxxx`
+
+**Ollama Setup** (if using local models):
+1. Install Ollama from [ollama.ai](https://ollama.ai/)
+2. Run `ollama pull qwen2.5:14b` to download a model
+3. Start Ollama server: `ollama serve`
 
 ---
 
@@ -175,7 +211,7 @@ Tavily provides a **free tier** for API access:
 
 ### 1. Streamlit Web Interface
 
-The Streamlit app provides a user-friendly chat interface with PDF upload capability:
+The Streamlit app provides a user-friendly chat interface:
 
 ```bash
 streamlit run app.py
@@ -183,15 +219,9 @@ streamlit run app.py
 
 Then open your browser to `http://localhost:8501`
 
-**Features**:
-- Chat interface with multi-turn conversation support
-- Sidebar for configuration (max iterations)
-- PDF upload to knowledge base
-- Real-time agent activity display
-
 ### 2. FastAPI Backend
 
-Deploy the REST API backend for programmatic access:
+Deploy the REST API backend:
 
 ```bash
 uvicorn api:api --host 0.0.0.0 --port 8000
@@ -199,7 +229,15 @@ uvicorn api:api --host 0.0.0.0 --port 8000
 
 Access Swagger UI documentation at `http://localhost:8000/docs`
 
-### 3. Graph Visualization
+### 3. CLI Entry Point
+
+Run via command line:
+
+```bash
+python main.py
+```
+
+### 4. Graph Visualization
 
 Generate a Mermaid diagram of the agent workflow:
 
@@ -207,27 +245,60 @@ Generate a Mermaid diagram of the agent workflow:
 python visualize_graph.py
 ```
 
-This creates `assets/research_graph.mmd` which can be viewed at [mermaid.live](https://mermaid.live/)
+---
 
-### 4. ABC Benchmark (SWE-bench)
+## Running Tests
 
-Run the ABC benchmark to evaluate the_multi-agent system on SWE-bench coding tasks:
-
-**Conditions:**
-- A: Baseline (no reviewer) - runs locally
-- B: With Reviewer Agent - runs locally
-- C: With OpenHands - requires Docker
+Run the unit tests with pytest:
 
 ```bash
-# Condition A (Baseline) - Local
-python evaluate_swe.py --variant a --output results_a.json
+pytest tests/
+```
 
-# Condition B (Reviewer) - Local
-python evaluate_swe.py --variant b --output results_b.json
+Run with verbose output:
 
-# Condition C (OpenHands) - Docker
-docker build -t mas-abc-c .
-docker run mas-abc-c
+```bash
+pytest -v tests/
+```
+
+---
+
+## ABC Benchmark (SWE-bench)
+
+Run the ABC benchmark to evaluate the multi-agent system on SWE-bench coding tasks:
+
+### Prerequisites
+
+- **Conditions A & B**: Python virtual environment with dependencies installed
+- **Condition C**: Docker Desktop installed and running + Ollama
+
+### Running Each Condition
+
+```bash
+# Activate virtual environment
+.\venv\Scripts\activate  # On Windows
+# or
+source venv/bin/activate  # On Linux/Mac
+
+# Condition A (Baseline - no reviewer)
+python evaluate_swe.py --variant a --output results_a.json --sample
+
+# Condition B (With Reviewer Agent - hallucination detection)
+python evaluate_swe.py --variant b --output results_b.json --sample
+
+# Condition C (With OpenHands - requires Docker)
+# First start OpenHands Docker container:
+docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
+
+# Then run:
+python evaluate_swe.py --variant c --output results_c.json --sample
+```
+
+### Full Benchmark Workflow
+
+```bash
+# Run all three conditions
+python run_benchmark.py --output results_abc.json --max-instances 5
 ```
 
 ---
@@ -292,418 +363,73 @@ Health check endpoint to verify system status.
 
 ---
 
-## Agent Roles & Responsibilities
+## Agent Roles
 
 ### Router Agent
-
-**Purpose**: Classify user intent and route to appropriate workflow
-
-**Responsibilities**:
-- Analyze user query for intent signals using keyword matching and LLM analysis
-- Classify intent as: `code`, `research`, `general`, or `quiz`
-- Determine required answer depth (short concise vs. comprehensive)
-- Route query to specialized handlers or supervisor
-
-**Decision Process**:
-Uses heuristic patterns combined with LLM reasoning to identify user intent, enabling intelligent workflow selection.
-
----
+Classifies user intent and routes to appropriate workflow (code, research, quiz, general).
 
 ### Supervisor Agent
-
-**Purpose**: Orchestrate multi-agent workflow and make strategic decisions
-
-**Responsibilities**:
-- Manage workflow state and coordinate between specialized agents
-- Decide routing: researcher → writer → critiquer → approval
-- Implement revision loop (up to 3 iterations for quality improvement)
-- Store approved outputs to long-term memory for future reference
-- Handle edge cases and implement graceful fallbacks
-
-**Workflow Management**:
-Implements a research-write-review cycle where the supervisor monitors progress and decides whether to continue refinement or finalize output.
-
----
+Orchestrates multi-agent workflow and makes strategic decisions.
 
 ### Researcher Agent
-
-**Purpose**: Gather comprehensive information from web and knowledge base
-
-**Responsibilities**:
-- Perform targeted Tavily web searches for current information
-- Retrieve relevant documents from knowledge base using semantic search
-- Combine local knowledge with web findings for comprehensive context
-- Format findings in structured format for downstream synthesis
-
-**Knowledge Integration**:
-Leverages both real-time web search and persistent knowledge base to provide well-grounded, contextually relevant research findings.
-
----
+Gathers comprehensive information from web and knowledge base using Tavily search and RAG.
 
 ### Writer Agent
-
-**Purpose**: Synthesize findings into coherent, well-structured responses
-
-**Responsibilities**:
-- Create first drafts from research findings or direct user requests
-- Revise based on critique feedback with targeted improvements
-- Adapt response length based on complexity (short vs. comprehensive)
-- Maintain academic tone and logical flow throughout
-
-**Synthesis Strategy**:
-Transforms raw information into polished, readable content that directly addresses user needs with appropriate depth.
-
----
+Synthesizes findings into coherent, well-structured responses.
 
 ### Critiquer Agent
-
-**Purpose**: Quality assurance and constructive feedback mechanism
-
-**Responsibilities**:
-- Review drafts for completeness, accuracy, structure, clarity, and depth
-- Provide specific, actionable feedback for improvement
-- Approve or reject outputs with decision rationale
-- Guide revision priorities when improvements needed
-
-**Quality Framework**:
-Evaluates outputs across multiple dimensions to ensure high-quality, well-reasoned responses that meet user expectations.
-
----
+Quality assurance and constructive feedback mechanism.
 
 ### Code Helper Agent
-
-**Purpose**: Assist with coding questions and provide safe code execution
-
-**Responsibilities**:
-- Explain code concepts, design patterns, and best practices
-- Generate code snippets in multiple languages (Python, C, C++)
-- Execute code safely with timeout protection and security checks
-- Provide debugging assistance and error explanation
-
-**Safe Execution**:
-Implements comprehensive safeguards including operation whitelisting, timeout enforcement (5 seconds), and exception handling to prevent malicious or broken code execution.
-
----
+Assists with coding questions and provides safe code execution.
 
 ### Quiz Helper Agent
+Generates educational content and learning tools.
 
-**Purpose**: Generate educational content and learning tools
-
-**Responsibilities**:
-- Create comprehensive quizzes (8-10 diverse questions with answer keys)
-- Generate step-by-step checklists and action plans
-- Adapt content to topic complexity and learner level
-- Ensure engagement through varied question types and clear instructions
-
-**Learning Design**:
-Produces pedagogically sound educational materials that reinforce learning objectives and support different study approaches.
+### Reviewer Agent (Hallucination Detection)
+Evaluates agent outputs for relevancy and detects hallucinations in code generation tasks.
 
 ---
 
-### Security: Prompt Injection Protection
+## Hallucination Detection
 
-The system implements **multi-layered prompt injection protection** to prevent adversarial attacks:
+The system includes a **Reviewer Agent** that performs hallucination detection on coding tasks:
 
-- **Pattern Detection**: Identifies common injection attempts through signature matching of known attack phrases
-- **Input Sanitization**: Filters user input to remove or neutralize suspicious patterns before passing to LLM
-- **Context Isolation**: Maintains clear separation between system instructions and user input
-- **Output Validation**: Validates LLM outputs conform to expected schema before processing
+### How It Works
 
-This defense-in-depth approach prevents attackers from manipulating the system through crafted prompts while maintaining normal functionality for legitimate users.
+1. **Code Evaluation**: The Reviewer Agent evaluates code outputs against:
+   - **Correctness**: Does the code solve the specific problem?
+   - **Edge Cases**: Does it handle boundary conditions?
+   - **Security**: Are there vulnerabilities?
+   - **Code Quality**: Is the code clean and follows best practices?
+   - **Relevance**: Does it directly address the user's question?
 
----
+2. **Scoring**: Each criterion is rated 1-10, then averaged and scaled to 0.0-1.0
 
-## Tools & Capabilities
+3. **Refinement Loop**: If score < 0.7, the system refines the output (up to 3 iterations)
 
-### 1. Tavily Search API
+### ABC Condition Behavior
 
-**Purpose**: Real-time web search with high-quality summarization
-
-**Integration**:
-- Searches the web for current, relevant information
-- Returns top results with automatic summarization
-- Configured for general web search with basic depth
-
-**Used by**: Researcher Agent  
-**Capability**: Deep research queries automatically trigger web searches for latest information
-
----
-
-### 2. Code Execution Tool
-
-**Purpose**: Safe execution of Python, C, and C++ code with security constraints
-
-**Supported Languages**:
-- Python (primary language)
-- C (for systems programming)
-- C++ (for advanced applications)
-
-**Safety Features**:
-- Timeout protection (5 seconds default) prevents infinite loops
-- Operation whitelisting blocks dangerous imports (os, sys, subprocess, shutil, socket)
-- Exception handling prevents crashes from bad code
-- Sandboxed execution isolates effects
-
-**Used by**: Code Helper Agent
-
----
-
-### 3. RAG System (Retrieval-Augmented Generation)
-
-**Purpose**: Access long-term knowledge from uploaded PDFs and stored notes
-
-**Components**:
-- **Vector Database**: Chroma with semantic embeddings
-- **Embeddings**: Sentence-transformers for semantic similarity
-- **Document Storage**: PDF files in `notes/` directory + JSON metadata
-- **Retrieval**: `retrieve_long_term_context()` performs similarity search
-
-**Used by**: Researcher Agent (for knowledge augmentation beyond web search)
+- **Condition A**: Baseline - runs code helper once, no reviewer
+- **Condition B**: With Reviewer - scores output, accepts (≥0.7) or refines (<0.7)
+- **Condition C**: With OpenHands + Reviewer - uses OpenHands for code generation
 
 ---
 
 ## Memory Management
 
-### Short-Term Memory (Context Window)
+### Short-Term Memory
+Messages in ChatState for single conversation session.
 
-**Storage**: Messages in ChatState  
-**Scope**: Single conversation session  
-**Purpose**: Maintain conversation history for coherence and multi-turn interactions  
-
-**Implementation**: 
-Accumulative list field in TypedDict that stores all messages in current session, enabling agents to understand conversation context and build on previous exchanges.
-
----
-
-### Long-Term Memory (Knowledge Base)
-
-**Storage Options**:
-1. **Vector Database**: Chroma with semantic embeddings for similarity-based retrieval
-2. **File System**: JSON notes + PDF documents stored persistently
-3. **Retrieval Methods**: Semantic search + keyword matching
-
-**Purpose**: 
-Store and retrieve information beyond current interaction, enabling agents to recall past results, learned knowledge, and task history.
-
-**Access Patterns**:
-- `save_long_term_note(topic, content)` - Store information
-- `retrieve_long_term_context(query)` - Semantic search with fallback to keyword search
-- `search_long_term_notes(query)` - Direct knowledge base search
-
-**Used by**: Researcher Agent, Quiz Helper, all downstream agents
-
-**Persistence**: 
-Across sessions and conversations, enabling continuous learning and knowledge accumulation over time.
-
----
+### Long-Term Memory
+- Vector Database (Chroma) for semantic similarity search
+- File System (JSON notes + PDF documents)
+- Semantic search + keyword matching
 
 ### Shared Memory (Blackboard Pattern)
-
-**Purpose**: Collaborative reasoning space accessible to all agents
-
-**Implementation**:
-Shared memory module provides a common workspace where agents can:
-- Post findings, insights, and intermediate results
-- Read context from other agents' work
-- Update shared understanding of the problem
-- Enable collaborative problem-solving
-
-**Benefits**:
-- **Knowledge Sharing**: Agents don't duplicate research
-- **Context Propagation**: Important information reaches all relevant agents
-- **Collaborative Reasoning**: Multiple agents build on each other's insights
-- **Efficiency**: Reduces redundant computation and API calls
-
-**Pattern**: 
-Implements classic "blackboard" architecture where agents communicate through shared data structures rather than direct message passing.
+Collaborative reasoning space where agents can post findings and insights.
 
 ---
 
-## Reflection & Future Work
-
-### What Worked Well 
-
-1. **Agent Specialization**: Each agent excels at its specific domain, enabling focused optimization
-2. **Supervisor Orchestration**: Intelligent routing significantly reduces failure cases and improves quality
-3. **Long-term Memory Integration**: Persistent knowledge base improves successive queries and enables learning
-4. **Prompt Injection Protection**: Multi-layered security prevents common attack vectors
-5. **Tool Integration**: Seamless Tavily + code execution + RAG integration creates powerful capabilities
-6. **Error Resilience**: Fallback mechanisms ensure graceful degradation instead of crashes
-
-### Challenges & Limitations 
-
-1. **Revision Loop Efficiency**: Sometimes gets stuck in minor revision cycles (mitigated with max iterations)
-2. **Context Window Constraints**: Token limits on very large documents (mitigated with summarization)
-3. **Tool Accuracy Variability**: Web search quality depends on query formulation
-4. **Code Execution Tradeoff**: Balance between capability and security limits some advanced operations
-5. **Memory Scaling**: Vector DB performance with very large document collections needs optimization
-
-### Future Improvements 
-
-**Advanced Reasoning**:
-- Implement multi-turn agent communication for collaborative problem-solving
-- Add explicit reflection and self-critique loops beyond current scope
-- Support Chain-of-Thought variants and tree-of-thought exploration patterns
-
-**Enhanced Memory**:
-- Integrate graph-based knowledge graphs (Neo4j) for structured relationships
-- Implement semantic memory with entity extraction and linking
-- Add temporal memory for time-aware queries and historical context
-
-**Tool Expansion**:
-- Add code analysis tools (AST parsing, linting, complexity analysis)
-- Integrate academic paper databases (ArXiv API)
-- Support SQL query generation for database tasks
-- Add integration with external APIs (Weather, Wikipedia, etc.)
-
-**User Interface Improvements**:
-- Develop React-based frontend with real-time agent visualization
-- Implement chat history export (PDF, Markdown)
-- Create agent performance analytics dashboard
-
-**Production Deployment**:
-- Docker containerization with docker-compose orchestration
-- Kubernetes support for cloud deployment at scale
-- CI/CD pipeline for automated testing and deployment
-- Load balancing for handling multiple concurrent users
-
-**Model Optimization**:
-- Fine-tune routing model for better intent classification accuracy
-- Quantized models for faster inference on edge devices
-- Multi-model ensemble for improved robustness
-
-**Advanced Patterns**:
-- Hierarchical agents with meta-supervisor for complex problems
-- Debate pattern where multiple agents argue different perspectives
-- Plan-then-execute pattern for better long-term planning
-- Retrieval-augmented planning for knowledge-aware task decomposition
-
----
- 
-**Version**: 1.0.0  
-**Last Updated**: December 2025
-
----
-
-## Docker: Running Condition C with OpenHands
-
-This project supports three conditions for ABC benchmarking:
-
-| Condition | Description | Runtime | Requirements |
-|-----------|-------------|--------|---------------|
-| A | Baseline (no reviewer) | Local (Python 3.10) | Ollama running |
-| B | With Reviewer Agent | Local (Python 3.10) | Ollama running |
-| C | With OpenHands Agent | Docker (HTTP API) | Ollama + Docker |
-
-### HTTP Approach
-
-For Condition C, we use a **hybrid approach**:
-1. Run OpenHands as a Docker service (simple, one command)
-2. Your Python 3.10 code calls it via **HTTP API**
-3. No custom image building needed!
-
-### Prerequisites
-
-1. **Docker Desktop** installed and running
-2. **Ollama** running on your laptop (for the LLM)
-
-### Starting OpenHands Service
-
-```bash
-# Pull and run OpenHands service (one time)
-docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
-
-# Check if running
-docker ps | grep openhands
-```
-
-### Running the Benchmark
-
-```bash
-# Condition C using HTTP client (your Python code calls the Docker service)
-python evaluate_swe.py --variant c --sample --output results_c.json
-```
-
-### Full ABC Benchmark Workflow
-
-```bash
-# Step 1: Run Conditions A & B locally (Python 3.10 virtual env)
-source .venv/Scripts/activate
-python evaluate_swe.py --variant a --output results_a.json
-python evaluate_swe.py --variant b --output results_b.json
-
-# Step 2: Start OpenHands (if not running)
-docker start openhands-server
-
-# Step 3: Run Condition C (calls Docker via HTTP)
-python evaluate_swe.py --variant c --output results_c.json
-
-# Step 4: Compare results
-# Results will be in: results_a.json, results_b.json, results_c.json
-```
-
-### Troubleshooting OpenHands
-
-**OpenHands container not running:**
-```bash
-# Start the container
-docker start openhands-server
-
-# Or create and start new
-docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
-```
-
-**Ollama connection refused:**
-```bash
-# Check Ollama is running
-ollama list
-
-# Restart Ollama binding to all interfaces
-ollama serve --hostname 0.0.0.0
-```
-
-**Port 3000 already in use:**
-```bash
-# Check what's using port 3000
-netstat -an | grep 3000
-
-# Stop the conflicting container
-docker stop openhands-server
-docker rm openhands-server
-```
-
-**Check OpenHands status:**
-```bash
-# Via Docker
-docker logs openhands-server
-
-# Or via HTTP
-curl http://localhost:3000/api/status
-```
-
-### Publishing to GitHub Container Registry
-
-```bash
-# Login to GitHub
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stin
-
-# Commit current container as image
-docker commit openhands-server ghcr.io/yourusername/openhands-server:latest
-
-# Push to GitHub
-docker push ghcr.io/yourusername/openhands-server:latest
-```
-
-```bash
-# Tag the image
-docker tag mas-abc-c ghcr.io/yourusername/mas-abc-c:latest
-
-# Login to GitHub
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
-
-# Push to GitHub
-docker push ghcr.io/yourusername/mas-abc-c:latest
-
-# Run from GitHub
-docker run ghcr.io/yourusername/mas-abc-c:latest
-```
+**Version**: 1.1.0  
+**Last Updated**: April 2026

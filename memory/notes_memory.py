@@ -1,6 +1,6 @@
 # memory/notes_memory.py
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 import os
 
@@ -28,7 +28,7 @@ def save_note(topic: str, note: str, note_type: str = "report"):
         metadata={"topic": topic, "type": note_type},
     )
     _notes_vs.add_documents([doc])
-    _notes_vs.persist()
+    # NOTE: langchain-chroma auto-persists; explicit .persist() removed.
 
 def search_notes(query: str, k: int = 4):
     """Retrieve relevant past notes for a new query."""

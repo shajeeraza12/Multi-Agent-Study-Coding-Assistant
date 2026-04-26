@@ -81,6 +81,7 @@ def chat(req: ChatRequest):
     initial_state = {
         "messages": [m.model_dump() for m in req.messages],
         "intent": "",
+        "answer_mode": "",
         "main_task": last_user_msg,
         "research_findings": [],
         "draft": "",
@@ -92,11 +93,11 @@ def chat(req: ChatRequest):
         "code_snippet": "",
         "code_answer": "",
         "quiz_output": "",
-        # Relevancy tracking initialization
         "relevancy_checks": [],
         "total_checks": 0,
         "relevant_count": 0,
         "irrelevant_count": 0,
+        "agent_type_relevance": {},
     }
 
     config = {"recursion_limit": req.max_steps}

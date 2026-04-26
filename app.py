@@ -91,6 +91,7 @@ if user_input:
     initial_state = {
         "messages": st.session_state.messages,
         "intent": "",
+        "answer_mode": "",
         "main_task": user_input,
         "research_findings": [],
         "draft": "",
@@ -102,11 +103,11 @@ if user_input:
         "code_snippet": "",
         "code_answer": "",
         "quiz_output": "",
-        # Relevancy tracking initialization
         "relevancy_checks": [],
         "total_checks": 0,
         "relevant_count": 0,
         "irrelevant_count": 0,
+        "agent_type_relevance": {},
     }
 
     config = {"recursion_limit": max_iterations}

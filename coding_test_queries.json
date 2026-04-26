@@ -1,0 +1,12 @@
+[
+  "Write a Python function that finds all duplicate elements in a list and returns them. It should run in O(n) time complexity.",
+  "Fix this buggy binary search implementation that returns wrong results for edge cases: def binary_search(arr, target): lo, hi = 0, len(arr); while lo < hi: mid = (lo+hi)//2; if arr[mid] == target: return mid; elif arr[mid] < target: lo = mid; else: hi = mid; return -1",
+  "Implement a thread-safe singleton pattern in Python that works correctly under concurrent access.",
+  "Write a Python decorator that retries a function up to 3 times with exponential backoff if it raises an exception.",
+  "Debug this recursive fibonacci function that causes a RecursionError for large inputs and rewrite it iteratively.",
+  "Implement a LRU cache class in Python with get and put methods, both running in O(1) time.",
+  "Write a context manager in Python that times the execution of a code block and prints the duration.",
+  "Fix this merge sort implementation that fails on lists with duplicate values.",
+  "Write a Python generator function that yields all permutations of a given list without using itertools.",
+  "Implement a simple rate limiter class that allows at most N requests per second."
+]

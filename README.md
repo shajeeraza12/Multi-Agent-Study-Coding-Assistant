@@ -209,6 +209,27 @@ python visualize_graph.py
 
 This creates `assets/research_graph.mmd` which can be viewed at [mermaid.live](https://mermaid.live/)
 
+### 4. ABC Benchmark (SWE-bench)
+
+Run the ABC benchmark to evaluate the_multi-agent system on SWE-bench coding tasks:
+
+**Conditions:**
+- A: Baseline (no reviewer) - runs locally
+- B: With Reviewer Agent - runs locally
+- C: With OpenHands - requires Docker
+
+```bash
+# Condition A (Baseline) - Local
+python evaluate_swe.py --variant a --output results_a.json
+
+# Condition B (Reviewer) - Local
+python evaluate_swe.py --variant b --output results_b.json
+
+# Condition C (OpenHands) - Docker
+docker build -t mas-abc-c .
+docker run mas-abc-c
+```
+
 ---
 
 ## API Documentation
@@ -561,3 +582,128 @@ Implements classic "blackboard" architecture where agents communicate through sh
  
 **Version**: 1.0.0  
 **Last Updated**: December 2025
+
+---
+
+## Docker: Running Condition C with OpenHands
+
+This project supports three conditions for ABC benchmarking:
+
+| Condition | Description | Runtime | Requirements |
+|-----------|-------------|--------|---------------|
+| A | Baseline (no reviewer) | Local (Python 3.10) | Ollama running |
+| B | With Reviewer Agent | Local (Python 3.10) | Ollama running |
+| C | With OpenHands Agent | Docker (HTTP API) | Ollama + Docker |
+
+### HTTP Approach
+
+For Condition C, we use a **hybrid approach**:
+1. Run OpenHands as a Docker service (simple, one command)
+2. Your Python 3.10 code calls it via **HTTP API**
+3. No custom image building needed!
+
+### Prerequisites
+
+1. **Docker Desktop** installed and running
+2. **Ollama** running on your laptop (for the LLM)
+
+### Starting OpenHands Service
+
+```bash
+# Pull and run OpenHands service (one time)
+docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
+
+# Check if running
+docker ps | grep openhands
+```
+
+### Running the Benchmark
+
+```bash
+# Condition C using HTTP client (your Python code calls the Docker service)
+python evaluate_swe.py --variant c --sample --output results_c.json
+```
+
+### Full ABC Benchmark Workflow
+
+```bash
+# Step 1: Run Conditions A & B locally (Python 3.10 virtual env)
+source .venv/Scripts/activate
+python evaluate_swe.py --variant a --output results_a.json
+python evaluate_swe.py --variant b --output results_b.json
+
+# Step 2: Start OpenHands (if not running)
+docker start openhands-server
+
+# Step 3: Run Condition C (calls Docker via HTTP)
+python evaluate_swe.py --variant c --output results_c.json
+
+# Step 4: Compare results
+# Results will be in: results_a.json, results_b.json, results_c.json
+```
+
+### Troubleshooting OpenHands
+
+**OpenHands container not running:**
+```bash
+# Start the container
+docker start openhands-server
+
+# Or create and start new
+docker run -d -p 3000:3000 --name openhands-server ghcr.io/all-hands-ai/openhands:latest
+```
+
+**Ollama connection refused:**
+```bash
+# Check Ollama is running
+ollama list
+
+# Restart Ollama binding to all interfaces
+ollama serve --hostname 0.0.0.0
+```
+
+**Port 3000 already in use:**
+```bash
+# Check what's using port 3000
+netstat -an | grep 3000
+
+# Stop the conflicting container
+docker stop openhands-server
+docker rm openhands-server
+```
+
+**Check OpenHands status:**
+```bash
+# Via Docker
+docker logs openhands-server
+
+# Or via HTTP
+curl http://localhost:3000/api/status
+```
+
+### Publishing to GitHub Container Registry
+
+```bash
+# Login to GitHub
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stin
+
+# Commit current container as image
+docker commit openhands-server ghcr.io/yourusername/openhands-server:latest
+
+# Push to GitHub
+docker push ghcr.io/yourusername/openhands-server:latest
+```
+
+```bash
+# Tag the image
+docker tag mas-abc-c ghcr.io/yourusername/mas-abc-c:latest
+
+# Login to GitHub
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Push to GitHub
+docker push ghcr.io/yourusername/mas-abc-c:latest
+
+# Run from GitHub
+docker run ghcr.io/yourusername/mas-abc-c:latest
+```

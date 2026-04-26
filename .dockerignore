@@ -1,0 +1,58 @@
+# Docker ignore file
+# Files and directories to exclude from the Docker image
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files (will be set in Docker ENV)
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Data directories (large, not needed in image)
+notes/
+chroma_db/
+*.json
+!requirements.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+results_*.json
+evaluation_report.json
+swe_results.json
+abc_results.json
+debug.log
+
+# Memory/model cache
+all-MiniLM-L6-v2/

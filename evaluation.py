@@ -57,6 +57,7 @@ class HallucinationEvaluator:
         initial_state = {
             "messages": [{"role": "user", "content": query}],
             "intent": "",
+            "answer_mode": "",
             "main_task": query,
             "research_findings": [],
             "draft": "",
@@ -72,46 +73,50 @@ class HallucinationEvaluator:
             "total_checks": 0,
             "relevant_count": 0,
             "irrelevant_count": 0,
-            "agent_type_relevance": {}
+            "agent_type_relevance": {},
         }
-        
+
         config = {"recursion_limit": max_steps}
         final_state = None
         all_checks = []
-        
+        agent_type_rel = {}
+
         for step in app.stream(initial_state, config=config):
             node_name = list(step.keys())[0]
             node_state = step[node_name]
             final_state = node_state
-            
-            # Collect relevancy checks from each step
+
+            # Collect new checks added in this step only
             if isinstance(node_state, dict) and node_state.get("relevancy_checks"):
-                all_checks.extend(node_state["relevancy_checks"])
-        
+                for check in node_state["relevancy_checks"]:
+                    if check not in all_checks:
+                        all_checks.append(check)
+
+            # Keep updating agent_type_relevance from each step
+            if isinstance(node_state, dict) and node_state.get("agent_type_relevance"):
+                agent_type_rel = node_state["agent_type_relevance"]
+
         # Calculate metrics
-        total = final_state.get("total_checks", 0)
-        relevant = final_state.get("relevant_count", 0)
-        irrelevant = final_state.get("irrelevant_count", 0)
-        
-        # Calculate average review duration
-        durations = [check.get("review_duration", 0) for check in all_checks]
+        total = final_state.get("total_checks", 0) if final_state else 0
+        relevant = final_state.get("relevant_count", 0) if final_state else 0
+        irrelevant = final_state.get("irrelevant_count", 0) if final_state else 0
+
+        # Confidence metrics — now properly populated
+        durations = [c.get("review_duration", 0) for c in all_checks]
         avg_duration = sum(durations) / len(durations) if durations else 0
-        
-        # Calculate confidence metrics
-        confidences = [check.get("confidence", 0.5) for check in all_checks]
+
+        confidences = [c.get("confidence", 0.0) for c in all_checks]
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0
         high_confidence_count = sum(1 for c in confidences if c >= 0.8)
         high_confidence_rate = (high_confidence_count / len(confidences) * 100) if confidences else 0
-        
-        # Check if final answer was relevant
+
+        # Final answer relevance — check last content agent output
         final_answer_relevant = False
-        if all_checks:
-            # Look for the last writer or direct answer agent check
-            for check in reversed(all_checks):
-                if check.get("agent_name") in ["writer", "code_helper", "quiz_helper"]:
-                    final_answer_relevant = check.get("is_relevant", False)
-                    break
-        
+        for check in reversed(all_checks):
+            if check.get("agent_name") in {"writer", "code_helper", "quiz_helper"}:
+                final_answer_relevant = check.get("is_relevant", False)
+                break
+
         return RelevancyMetrics(
             query=query,
             total_checks=total,
@@ -121,7 +126,7 @@ class HallucinationEvaluator:
             avg_review_duration=avg_duration,
             avg_confidence=avg_confidence,
             high_confidence_rate=high_confidence_rate,
-            agent_breakdown=final_state.get("agent_type_relevance", {}),
+            agent_breakdown=agent_type_rel,
             workflow_steps=total,
             final_answer_relevant=final_answer_relevant,
             timestamp=datetime.now().isoformat()

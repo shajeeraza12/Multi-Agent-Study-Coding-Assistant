@@ -57,6 +57,9 @@ dependencies = [
     "sentence-transformers",
     "pypdf",
 
+    # --- SWE-bench Lite dataset loading ---
+    "datasets>=2.14",
+
     # --- LLM providers (direct SDKs, no langchain wrapper) ---
     "together>=1.3",
     "tavily-python>=0.5",

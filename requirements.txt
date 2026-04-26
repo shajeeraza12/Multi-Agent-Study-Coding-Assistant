@@ -19,3 +19,7 @@ pydantic>=2.7.0
 fastapi
 uvicorn[standard]
 python-multipart
+# OpenHands SDK for ABC Benchmarking (Condition C)
+openhands-sdk
+openhands-tools
+requests

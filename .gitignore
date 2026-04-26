@@ -1,7 +1,31 @@
 venv/
+venv312/
+.venv/
 __pycache__/
 *.pyc
 .env
 chroma_db/
 memory/notes_db/
 notes/
+results/
+workspace/
+cache/
+requirements-py312.txt
+pyproject-py310.toml
+
+# Result files
+condition_b_results.json
+results_c.json
+swe_results.json
+
+# Temporary/debug files
+fetchdata.py
+graph_variants.py
+debug.log
+
+# Personal/school files
+RP_ShajeeRaza_Sem4.pptx
+claude_design_prompt.md
+progress.md
+py312_migration_patches.md
+setup_wsl.md

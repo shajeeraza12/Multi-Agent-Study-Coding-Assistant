@@ -59,13 +59,61 @@ tavily_tool = TavilySearch(
 )
 
 def _call_llm(llm_obj, *args, **kwargs):
+    """Call LLM and return result.
+    
+    Optionally returns token usage estimates if get_token_usage=True.
+    Uses character-based heuristics as fallback when Ollama API doesn't provide them.
+    """
+    response = None
+    get_token_usage = kwargs.pop("get_token_usage", False)
+    token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
     if hasattr(llm_obj, "invoke") and callable(getattr(llm_obj, "invoke")):
-        return llm_obj.invoke(*args, **kwargs)
-    if hasattr(llm_obj, "run") and callable(getattr(llm_obj, "run")):
-        return llm_obj.run(*args, **kwargs)
-    if callable(llm_obj):
-        return llm_obj(*args, **kwargs)
-    raise AttributeError("LLM/tool object has no invoke/run and is not callable")
+        response = llm_obj.invoke(*args, **kwargs)
+    elif hasattr(llm_obj, "run") and callable(getattr(llm_obj, "run")):
+        response = llm_obj.run(*args, **kwargs)
+    elif callable(llm_obj):
+        response = llm_obj(*args, **kwargs)
+    else:
+        raise AttributeError("LLM/tool object has no invoke/run and is not callable")
+
+    if response is None:
+        if get_token_usage:
+            return None, token_usage
+        return None
+
+    # Extract token usage if requested and available
+    if get_token_usage:
+        if hasattr(response, "usage") and response.usage:
+            usage = response.usage
+            token_usage = {
+                "prompt_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+                "completion_tokens": getattr(usage, "completion_tokens", 0) or 0,
+                "total_tokens": getattr(usage, "total_tokens", 0) or 0,
+            }
+        else:
+            # Heuristic: estimate tokens from character count
+            content = ""
+            if hasattr(response, "content"):
+                content = str(response.content)
+            elif isinstance(response, str):
+                content = response
+
+            char_count = len(content)
+            if any(keyword in content.lower() for keyword in ["def ", "class ", "import ", "return "]):
+                estimated_tokens = char_count // 4
+            else:
+                estimated_tokens = int(char_count / 3.5)
+
+            token_usage = {
+                "prompt_tokens": 0,
+                "completion_tokens": estimated_tokens,
+                "total_tokens": estimated_tokens,
+            }
+
+        return response, token_usage
+
+    return response
 
 
 class RouterDecision(BaseModel):
@@ -145,11 +193,39 @@ def check_relevancy(user_prompt: str, context: str, agent_output: str, mode: str
                 '{"is_relevant": true/false, "confidence": 0.0-1.0, '
                 '"reasoning": "brief explanation"}\n'
             )
+    else:
+        prompt = (
+            "You are a code quality reviewer. Evaluate the agent's output for SWE-bench coding tasks.\n\n"
+            "=== USER QUERY (SWE-bench Issue) ===\n"
+            f"{user_prompt[:1500]}\n\n"
+            "=== CONTEXT ===\n"
+            f"{context[:1000] if context else 'No additional context available'}\n\n"
+            "=== AGENT OUTPUT ===\n"
+            f"{agent_output[:2000]}\n\n"
+            "=== EVALUATION CRITERIA (Rate 1-10 for each, then compute average/10) ===\n"
+            "1. CORRECTNESS: Does the code solve the specific problem in the issue?\n"
+            "   - Does it handle the exact bug/feature described?\n"
+            "2. EDGE CASES: Does it handle boundary conditions?\n"
+            "   - Empty input, null values, race conditions, etc.\n"
+            "3. SECURITY: Are there SQL injection, XSS, or other vulnerabilities?\n"
+            "4. CODE QUALITY: Is the code clean, readable, and follows best practices?\n"
+            "5. RELEVANCE: Does it directly address the user's coding question?\n\n"
+            "=== INSTRUCTIONS ===\n"
+            "Evaluate each criterion 1-10, compute average, then scale to 0.0-1.0.\n"
+            "For confidence: avg_score / 10.0\n"
+            "is_relevant: true if confidence >= 0.3, false otherwise.\n\n"
+            "Respond with ONLY a JSON object:\n"
+            '{"is_relevant": true/false, "confidence": 0.0-1.0, '
+            '"reasoning": "brief explanation of scores"}\n'
+        )
 
     try:
         response = _call_llm(llm, prompt)
         content = response.content if hasattr(response, "content") else str(response)
         content = content.strip()
+
+        # Debug: log raw LLM response
+        print(f"[REVIEWER DEBUG] Raw response ({len(content)} chars): {content[:300]}...")
 
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
@@ -172,7 +248,7 @@ def check_relevancy(user_prompt: str, context: str, agent_output: str, mode: str
         return {
             "is_relevant": True,
             "reasoning": f"Error during relevancy check, assuming relevant: {e}",
-            "confidence": 0.0
+            "confidence": 0.5  # Default to 0.5 instead of 0.0 on parse failure
         }
 
 

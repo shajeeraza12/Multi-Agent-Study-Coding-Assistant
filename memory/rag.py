@@ -5,10 +5,10 @@ from typing import List
 
 from dotenv import load_dotenv, find_dotenv
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 load_dotenv(find_dotenv(usecwd=True))
 
@@ -56,7 +56,8 @@ def add_document(file_path: str, doc_id: str) -> None:
 
     vs = _get_vectorstore()
     vs.add_documents(chunks)
-    vs.persist()
+    # NOTE: langchain-chroma auto-persists when persist_directory is set;
+    # the explicit .persist() call was removed in the new package.
 
 
 def retrieve_notes(query: str, k: int = 5) -> str:

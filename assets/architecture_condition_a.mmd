@@ -1,0 +1,37 @@
+flowchart LR
+    U(["User Input"]) --> router
+
+    subgraph GRAPH ["Condition A — Baseline (Single Agent, No Refine Loop)"]
+        direction TB
+        router{{"Router"}}
+        supervisor{{"Supervisor"}}
+        researcher["Researcher"]
+        writer["Writer"]
+        critiquer["Critiquer"]
+        code_helper["Code Helper"]
+        quiz_helper["Quiz Helper"]
+
+        router -->|"research / general"| supervisor
+        router -->|"quiz"| quiz_helper
+        supervisor -->|"researcher"| researcher
+        supervisor -->|"writer"| writer
+        researcher --> supervisor
+        writer --> critiquer
+        critiquer -->|"APPROVED"| supervisor
+        critiquer -->|"revisions"| writer
+    end
+
+    subgraph REVIEWER ["Reviewer Agent — Single Pass (score recorded, no retry)"]
+        direction TB
+        rv_rubric["5-Dimension Rubric
+Correctness · Edge Cases · Security · Quality · Relevance"]
+    end
+
+    router -->|"code"| code_helper
+    supervisor -->|"END"| OUT(["Final Output"])
+    code_helper --> rv_rubric
+    rv_rubric -->|"score logged"| OUT
+    quiz_helper --> OUT
+
+    style REVIEWER fill:#fce4ec,stroke:#e91e63,color:#000
+    style GRAPH fill:#e8f5e9,stroke:#4caf50,color:#000

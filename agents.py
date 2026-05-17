@@ -50,6 +50,31 @@ llm = ChatOpenAI(
 
 print(f"[LLM Configuration] Provider: {LLM_PROVIDER}, Model: {MODEL_NAME}, URL: {BASE_URL}")
 
+# ---------------------------------------------------------------------------
+# Judge LLM (Reviewer) — optionally decoupled from the generator LLM.
+# When JUDGE_MODEL is set, the Reviewer Agent uses a separate ChatOpenAI
+# pointed at JUDGE_BASE_URL / JUDGE_API_KEY / JUDGE_MODEL. This enables the
+# judge-generator separation experiment (different provider + model family
+# for the Reviewer) without affecting any other agent.
+# Defaults: if JUDGE_* vars are unset, judge_llm = llm (Phase 1 behavior).
+# ---------------------------------------------------------------------------
+JUDGE_MODEL = os.getenv("JUDGE_MODEL")
+JUDGE_BASE_URL = os.getenv("JUDGE_BASE_URL")
+JUDGE_API_KEY = os.getenv("JUDGE_API_KEY")
+
+if JUDGE_MODEL:
+    judge_llm = ChatOpenAI(
+        base_url=JUDGE_BASE_URL or BASE_URL,
+        api_key=JUDGE_API_KEY or API_KEY,
+        model=JUDGE_MODEL,
+        temperature=0.3,
+    )
+    print(f"[LLM Configuration] Judge: {JUDGE_MODEL}, "
+          f"URL: {JUDGE_BASE_URL or BASE_URL} (separated from generator)")
+else:
+    judge_llm = llm  # default: judge = generator
+    print(f"[LLM Configuration] Judge: same as generator ({MODEL_NAME})")
+
 tavily_tool = TavilySearch(
     max_results=5,
     topic="general",
@@ -220,7 +245,8 @@ def check_relevancy(user_prompt: str, context: str, agent_output: str, mode: str
         )
 
     try:
-        response = _call_llm(llm, prompt)
+        # Reviewer uses judge_llm — same as `llm` by default, separable via JUDGE_* env vars.
+        response = _call_llm(judge_llm, prompt)
         content = response.content if hasattr(response, "content") else str(response)
         content = content.strip()
 

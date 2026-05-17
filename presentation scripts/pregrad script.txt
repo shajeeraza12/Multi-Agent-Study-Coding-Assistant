@@ -1,0 +1,297 @@
+============================================================
+  PRE-GRADUATION DEFENCE — SPEAKING SCRIPT
+  Target: 10–11 minutes  (~140 words/min, ~1,480 words)
+  Slide count: 15
+============================================================
+
+------------------------------------------------------------
+SLIDE 1 — Title  (~20 sec)
+------------------------------------------------------------
+Good afternoon, everyone.
+I am Syed Muhammad Shajee Raza, and today I will present my work on a
+lightweight hallucination detection algorithm for a Reviewer Agent inside
+a code-generation multi-agent system.
+I will walk you through the problem, the design, and — for the first time —
+results from a full 19-instance empirical sweep.
+
+
+------------------------------------------------------------
+SLIDE 2 — Statement of the Problem  (~50 sec)
+------------------------------------------------------------
+Large language models are now routinely used to generate code — but they
+hallucinate confidently.
+They produce patches that compile, explanations that sound plausible —
+and tests that still fail.
+The core difficulty is that existing detection methods rely on logits,
+fine-tuning, or external verifiers — none of which are available to a
+deployed multi-agent system at inference time.
+The gap, therefore, is clear: we need a detector that is prompt-based,
+requires no fine-tuning, can be embedded directly into a LangGraph workflow,
+and generalises from text outputs to structured action traces.
+That is the gap this work fills.
+
+
+------------------------------------------------------------
+SLIDE 3 — Purpose, Objectives & the 5-Dimension Rubric  (~60 sec)
+------------------------------------------------------------
+The central purpose is to develop and empirically evaluate exactly such a detector.
+
+I defined four objectives.
+First: implement a score-driven refine loop — Condition B — and compare it
+against a single-shot baseline, Condition A, on SWE-bench Lite.
+Second: design a five-dimensional rubric — correctness, edge cases, security,
+code quality, and relevance — each scored 1 to 10.
+The confidence score is the mean of these five, normalised to 0 to 1.
+A score of 0.70 or above accepts the output; below it, we refine —
+up to three iterations — via a conditional LangGraph edge.
+Third: extend that same rubric to OpenHands action traces through the
+Hallucination Bridge, Condition C.
+And fourth: evaluate all three conditions empirically and measure the gains.
+
+
+------------------------------------------------------------
+SLIDE 4 — Review of Similar Solutions  (~35 sec)
+------------------------------------------------------------
+Four bodies of prior work are directly relevant.
+OpenHands provides the autonomous action agent infrastructure for Condition C,
+but includes no hallucination auditing.
+SWE-agent and RepoGraph address repository-level coding tasks without
+confidence gating.
+SelfCheckGPT requires multiple inference calls and cannot operate on action traces.
+LeTI needs labelled training pairs and a sandbox — inapplicable at inference time.
+The gap that none of them fill: a prompt-only rubric-based reviewer with
+a refine loop that extends to autonomous action traces in a single unified system.
+
+
+------------------------------------------------------------
+SLIDE 5 — Research Methods and Tools  (~35 sec)
+------------------------------------------------------------
+Methodologically, I run a controlled three-condition comparison across
+the same 19 SWE-bench Lite instances and the same underlying LLM,
+so that performance differences are attributable to architecture alone.
+
+The stack: LangGraph for orchestration, LangChain for LLM abstraction,
+the OpenHands SDK for the action agent, Pydantic for schema validation,
+and ChromaDB with all-MiniLM for RAG memory.
+The hosted model throughout Phase 1 is iairlab/qwen3-32b on the
+university-provisioned duckduck cloud endpoint.
+
+
+------------------------------------------------------------
+SLIDE 6 — Scientific Novelty  (~40 sec)
+------------------------------------------------------------
+The work introduces two novel contributions.
+
+The first is rubric-based confidence gating with a bounded refine loop.
+A five-dimension reviewer, embedded in a LangGraph pipeline with no
+fine-tuning or logit access, produces measurably higher scores than a
+single-shot baseline on the same LLM.
+
+The second is the Hallucination Bridge.
+The same reviewer is applied post-hoc to the per-step ActionEvent and
+ObservationEvent sequence that OpenHands emits during a coding task.
+This generalises the lightweight detector to a structurally distinct
+hallucination class: actions that are confident but unsupported by
+observed environment state.
+
+
+------------------------------------------------------------
+SLIDE 7 — System Architecture  (~50 sec)
+------------------------------------------------------------
+The system is a LangGraph state machine with a score-driven conditional edge.
+
+In Variant A, the reviewer scores the output but the edge always returns END —
+no refinement, pure instrumentation.
+In Variant B, the reviewer's confidence score drives the conditional edge:
+if confidence falls below 0.70 and the iteration count is below three,
+the graph loops back to the code helper with reviewer feedback attached.
+In Variant C, the code helper is replaced by an OpenHands action agent;
+the review logic is otherwise identical — and the reviewer additionally
+audits the per-step action trace via the Hallucination Bridge.
+
+Variants A and B share the code helper — B adds the refine loop, isolating
+iterative review. B and C share the review logic — C swaps the generator,
+isolating action-agent architecture. This two-axis isolation is the
+experimental backbone of the study.
+
+
+------------------------------------------------------------
+SLIDE 8 — Experimental Design  (~55 sec)
+------------------------------------------------------------
+Let me now make the experimental design concrete.
+
+The Phase 1 sweep ran all three conditions across 19 SWE-bench Lite instances,
+at acceptance threshold 0.70, using qwen3-32b as both generator and judge.
+This produced the primary baseline comparison.
+
+To test threshold sensitivity, I ran two additional sweeps — one for Condition B
+and one for Condition C — both raising the threshold to 0.85.
+
+Finally, a judge-separation experiment ran Condition A and Condition B at 0.85
+with a deliberately weaker generator, Ollama qwen2.5-7b, while keeping the
+same qwen3-32b judge. This isolates the question: does the Reviewer's value
+depend on the generator being strong?
+
+All five sweeps cover the same 19 instances across django, sympy,
+scikit-learn, and astropy — 57 runs in the Phase 1 baseline alone.
+
+
+------------------------------------------------------------
+SLIDE 9 — Key Results: Headline Numbers  (~75 sec)
+------------------------------------------------------------
+Here are the headline numbers across all sweeps.
+
+Condition A, our single-shot baseline, achieves a mean score of 0.878 —
+but with a standard deviation of 0.145 and a minimum of 0.30.
+That minimum is the critical number: one real instance fell to 0.30
+with no reviewer in the loop.
+
+Condition B at threshold 0.70 reaches a mean of 0.881 — a marginal lift —
+but the distribution tightens significantly: sigma drops from 0.145 to 0.069.
+
+The more important number is B at threshold 0.85.
+The mean rises to 0.926, standard deviation halves again to 0.044,
+and the minimum is exactly 0.85 — every single instance satisfies the rubric.
+The refine loop is functioning as a hard score floor.
+
+Condition C at 0.70 averages 0.887 — comparable to A — but at 0.85 the
+mean falls to 0.721 with a standard deviation of 0.353.
+That is the signature of a bimodal distribution, which I will show next.
+
+And the judge-separation result: with a weak 7B generator, Condition B
+delivers a lift of plus 0.114 — versus only plus 0.003 when both sides
+use the same strong model. The Reviewer matters most exactly where it is needed most.
+
+
+------------------------------------------------------------
+SLIDE 10 — Finding 1: Reviewer Enforces a Hard Score Floor  (~65 sec)
+------------------------------------------------------------
+This plot shows every instance individually — each row is one SWE-bench
+instance, sorted by Condition A score ascending.
+The blue circle is A; the orange diamond is B at 0.85.
+A green arrow shows where the Reviewer improved the score.
+
+The most striking case is sympy-16792 at the bottom.
+The baseline scored 0.30 — the worst result in the entire sweep.
+With the Reviewer and one refinement cycle, the score rose to 0.96.
+A lift of 0.66 on a real software engineering instance, purely from a
+prompt-based review loop with no retraining.
+
+More broadly: 14 of 19 instances improved under B versus A.
+The 5 that did not still scored above 0.85 — the refine ceiling
+means even a small regression stays within the acceptance band.
+The Reviewer does not just improve the mean — it compresses the distribution
+and guarantees a minimum.
+
+
+------------------------------------------------------------
+SLIDE 11 — Finding 2: Condition C is Bimodal at Threshold 0.85  (~55 sec)
+------------------------------------------------------------
+The action agent result is more nuanced.
+At threshold 0.70, C performs comparably to B — mean 0.887.
+But when we raise the threshold to 0.85, the distribution splits.
+
+14 of 19 instances cluster between 0.86 and 1.00 — the action agent
+succeeds and the Reviewer confirms it.
+The remaining 5 instances collapse to 0.40 or below,
+including one at exactly zero.
+
+The root cause is context explosion. OpenHands accumulates roughly
+150,000 tokens by step 30. At that scale the judge loses coherence —
+it cannot reliably audit the trace, and the refine loop then
+degrades an already-struggling run further.
+
+The implication is practical: a more aggressive acceptance threshold
+is not uniformly beneficial for autonomous action agents.
+Threshold calibration must account for agent context growth.
+
+
+------------------------------------------------------------
+SLIDE 12 — Finding 3: Reviewer Adds Most Value When Generator is Weak  (~55 sec)
+------------------------------------------------------------
+The final finding comes from the judge-separation experiment.
+
+On the left: the Phase 1 baseline, where the same strong qwen3-32b model
+drives both generation and review.
+A averages 0.878, B averages 0.881 — a delta of only plus 0.003.
+When the generator is already capable, the Reviewer has limited room to add lift.
+
+On the right: the weak-generator regime.
+With Ollama qwen2.5-7b generating and qwen3-32b judging,
+A falls to 0.657. B recovers to 0.771 — a delta of plus 0.114.
+
+This is the core architectural insight: the Reviewer is not redundant overhead.
+It is a safety net whose value scales directly with generator weakness.
+In any real deployment where model quality is variable or constrained,
+the Reviewer Agent is the correction mechanism, not the bottleneck.
+
+
+------------------------------------------------------------
+SLIDE 13 — A→B Improvements per Instance  (~40 sec)
+------------------------------------------------------------
+This slide shows the 14 instances where the Reviewer produced a lift,
+comparing all three conditions side by side.
+
+Each row is one instance. Green arrows mark the A-to-B lift.
+Purple squares show where Condition C landed on the same instances.
+
+Two patterns stand out.
+Where the baseline was weakest — sympy-13437 at 0.20, astropy-12907 at 0.40 —
+the Reviewer delivered the largest lifts.
+And on several of those same instances, Condition C also performs well —
+confirming that when context stays manageable, the action agent and the
+Reviewer complement rather than conflict with each other.
+
+
+------------------------------------------------------------
+SLIDE 14 — Conclusions, Limitations & Future Work  (~55 sec)
+------------------------------------------------------------
+Four conclusions.
+
+One: rubric-based gating works. B at 0.85 lifts the mean by plus 0.048
+over A and enforces a hard minimum — no instance escapes below threshold.
+
+Two: Reviewer value scales with generator weakness — plus 0.003 with a
+strong model, plus 0.114 with a weak one. Deploy the Reviewer wherever
+the generator is uncertain.
+
+Three: the Hallucination Bridge generalises the rubric to action traces —
+a structurally distinct hallucination class becomes detectable without
+fine-tuning.
+
+Four: bimodality is a real risk at C at 0.85. Aggressive refinement with
+an autonomous agent is not uniformly beneficial under large context budgets.
+
+The main limitations are LLM-regime sensitivity — absolute scores are not
+comparable across judge changes — and limited statistical power at 19 instances.
+
+Future work: a full 50-instance sweep, a formal per-action hallucination
+metric for OpenHands traces, and per-domain adaptive threshold calibration.
+
+
+------------------------------------------------------------
+SLIDE 15 — Thank You  (~15 sec)
+------------------------------------------------------------
+Thank you for your time.
+I am happy to take any questions.
+
+
+============================================================
+  TIMING GUIDE  (approximate, at ~140 wpm)
+============================================================
+  Slide  1  Title                          0:00 – 0:20
+  Slide  2  Problem                        0:20 – 1:10
+  Slide  3  Purpose & Rubric               1:10 – 2:10
+  Slide  4  Related Work                   2:10 – 2:45
+  Slide  5  Methodology                    2:45 – 3:20
+  Slide  6  Scientific Novelty             3:20 – 4:00
+  Slide  7  Architecture                   4:00 – 4:50
+  Slide  8  Experimental Design            4:50 – 5:45
+  Slide  9  Headline Numbers               5:45 – 7:00
+  Slide 10  Finding 1 — Floor              7:00 – 8:05
+  Slide 11  Finding 2 — C Bimodality       8:05 – 9:00
+  Slide 12  Finding 3 — Judge Separation   9:00 – 9:55
+  Slide 13  A to B Improvements            9:55 – 10:35
+  Slide 14  Conclusions                   10:35 – 11:30
+  Slide 15  Thank You                     11:30 – 11:45
+============================================================

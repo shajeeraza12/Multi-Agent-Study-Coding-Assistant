@@ -1,0 +1,38 @@
+flowchart TD
+    U(["User Input"]) --> router
+
+    subgraph GRAPH ["Condition B — Reviewer Agent with Refine Loop"]
+        router{{"Router"}}
+        supervisor{{"Supervisor"}}
+        researcher["Researcher"]
+        writer["Writer"]
+        critiquer["Critiquer"]
+        code_helper["Code Helper"]
+        quiz_helper["Quiz Helper"]
+    end
+
+    subgraph REVIEWER ["Reviewer Agent — Hallucination Gate"]
+        rv_rubric["5-Dimension Rubric
+Correctness Edge Cases Security Quality Relevance"]
+        rv_gate{{"Score >= 0.7?"}}
+        rv_rubric --> rv_gate
+    end
+
+    router -->|code| code_helper
+    router -->|research / general| supervisor
+    router -->|quiz| quiz_helper
+    supervisor -->|researcher| researcher
+    supervisor -->|writer| writer
+    supervisor -->|END| OUT
+    researcher --> supervisor
+    writer --> critiquer
+    critiquer -->|APPROVED| supervisor
+    critiquer -->|revisions| writer
+    code_helper --> rv_rubric
+    rv_gate -->|Yes| OUT(["Final Output"])
+    rv_gate -->|No iter < 3| code_helper
+    rv_gate -->|Max iterations| OUT
+    quiz_helper --> OUT
+
+    style REVIEWER fill:#fff3cd,stroke:#ffc107,color:#000
+    style GRAPH fill:#e8f4fd,stroke:#2196f3,color:#000

@@ -340,31 +340,64 @@ def quiz_node(state: ChatState) -> dict:
         **review
     }
 
+def _read_refine_threshold() -> float:
+    """Read the acceptance threshold for the refine gate from env.
+
+    Pre-registered Phase 1 default is 0.7. Phase 2 sensitivity study uses
+    0.85 and 0.95 via the REFINE_THRESHOLD environment variable so the same
+    code base can run multiple sweep configurations without source edits.
+    """
+    import os
+    try:
+        return float(os.environ.get("REFINE_THRESHOLD", "0.7"))
+    except ValueError:
+        print("[REVIEWER] WARNING: REFINE_THRESHOLD malformed, falling back to 0.7")
+        return 0.7
+
+
+def _read_max_refine_iterations() -> int:
+    """Read the maximum refine-loop iteration cap from env (default 3)."""
+    import os
+    try:
+        return int(os.environ.get("MAX_REFINE_ITERATIONS", "3"))
+    except ValueError:
+        return 3
+
+
 def route_from_reviewer(state: ChatState) -> str:
     """
     Route after code_helper + Reviewer check.
     Condition A: Go directly to END (baseline - single attempt)
-    Condition B: Check relevancy_score, accept or refine.
+    Condition B/C: Check relevancy_score, accept or refine.
+
+    Acceptance threshold and max iterations are read from env so that
+    sensitivity-analysis sweeps can be run without code edits:
+      REFINE_THRESHOLD=0.85
+      MAX_REFINE_ITERATIONS=3
     """
+    threshold = _read_refine_threshold()
+    max_iters = _read_max_refine_iterations()
+
     # Condition A: Go to END after single review attempt (baseline)
     if state.get("condition") == "A":
         score = state.get("relevancy_score", 0.0)
         print(f"[CONDITION A] Final score: {score:.2f} - ending workflow")
         return "END"
 
-    # Condition B: evaluate score
+    # Condition B/C: evaluate score against the configured threshold
     score = state.get("relevancy_score", 0.0)
-    if score >= 0.7:
-        print(f"[REVIEWER] Score {score:.2f} >= 0.7, accepting output")
+    if score >= threshold:
+        print(f"[REVIEWER] Score {score:.2f} >= {threshold:.2f}, accepting output")
         return "END"
 
-    # Refine loop (max 3 iterations)
+    # Refine loop (capped at max_iters)
     iterations = state.get("iteration_count", 0)
-    if iterations >= 3:
-        print("[REVIEWER] Max iterations reached, accepting output")
+    if iterations >= max_iters:
+        print(f"[REVIEWER] Max iterations ({max_iters}) reached, accepting output")
         return "END"
 
-    print(f"[REVIEWER] Score {score:.2f} < 0.7, refining (attempt {iterations + 1}/3)")
+    print(f"[REVIEWER] Score {score:.2f} < {threshold:.2f}, "
+          f"refining (attempt {iterations + 1}/{max_iters})")
     return "refine"
 
 

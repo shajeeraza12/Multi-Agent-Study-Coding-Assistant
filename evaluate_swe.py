@@ -348,6 +348,7 @@ def load_swe_bench_lite(
     clone_repos: bool = True,
     cache_dataset_dir: Optional[str] = None,
     skip_existing_clones: bool = True,
+    instance_ids: Optional[List[str]] = None,
 ) -> List[SWEBenchInstance]:
     """
     Load real SWE-bench Lite instances from HuggingFace.
@@ -369,6 +370,11 @@ def load_swe_bench_lite(
         skip_existing_clones: If True, do not re-clone if the workspace dir
                               already contains a .git directory. Saves time
                               on re-runs.
+        instance_ids: Allowlist of specific instance IDs to include. All
+                      others are skipped before cloning, so no unnecessary
+                      git work is done. None = include all instances (subject
+                      to repo_filter / max_instances). Pass the list from
+                      sweep_config.json for deterministic curated sweeps.
 
     Returns:
         List of SWEBenchInstance with full multi-paragraph problem_statement
@@ -395,6 +401,19 @@ def load_swe_bench_lite(
         repo_set = set(repo_filter)
         ds = ds.filter(lambda x: x["repo"] in repo_set)
         print(f"[SWE-BENCH] Filtered to {len(ds)} instances matching repos: {sorted(repo_set)}")
+
+    # Filter by explicit instance ID allowlist (takes precedence over max_instances cap)
+    if instance_ids:
+        id_set = set(instance_ids)
+        ds = ds.filter(lambda x: x["instance_id"] in id_set)
+        print(f"[SWE-BENCH] Filtered to {len(ds)} instances matching --instance-ids allowlist")
+        # Warn about any requested IDs not found in the dataset
+        found = {item["instance_id"] for item in ds}
+        missing = id_set - found
+        if missing:
+            print(f"[SWE-BENCH] WARNING: {len(missing)} requested ID(s) not found in dataset:")
+            for m in sorted(missing):
+                print(f"             - {m}")
 
     # Cap count if requested
     if max_instances and max_instances < len(ds):

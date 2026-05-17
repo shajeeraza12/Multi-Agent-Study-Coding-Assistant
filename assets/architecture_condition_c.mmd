@@ -1,0 +1,49 @@
+flowchart TD
+    U(["User Input"]) --> router
+
+    subgraph GRAPH ["Condition C — OpenHands Agent Supervised by Reviewer"]
+        router{{"Router"}}
+        supervisor{{"Supervisor"}}
+        researcher["Researcher"]
+        writer["Writer"]
+        critiquer["Critiquer"]
+        oh_agent["OpenHands Agent
+Autonomous terminal and file actions"]
+        quiz_helper["Quiz Helper"]
+    end
+
+    subgraph REVIEWER ["Reviewer Agent — Hallucination Bridge"]
+        rv_rubric["5-Dimension Rubric
+Correctness Edge Cases Security Quality Relevance"]
+        rv_gate{{"Score >= 0.7?"}}
+        rv_rubric --> rv_gate
+    end
+
+    subgraph FORENSICS ["Forensic Metadata in ChatState"]
+        meta["openhands_status
+openhands_backend
+openhands_step_count
+openhands_wall_time_s
+openhands_action_trace"]
+    end
+
+    router -->|code| oh_agent
+    router -->|research / general| supervisor
+    router -->|quiz| quiz_helper
+    supervisor -->|researcher| researcher
+    supervisor -->|writer| writer
+    supervisor -->|END| OUT
+    researcher --> supervisor
+    writer --> critiquer
+    critiquer -->|APPROVED| supervisor
+    critiquer -->|revisions| writer
+    oh_agent -->|action trace| FORENSICS
+    oh_agent --> rv_rubric
+    rv_gate -->|Yes| OUT(["Final Output"])
+    rv_gate -->|No iter < 3| oh_agent
+    rv_gate -->|Max iterations| OUT
+    quiz_helper --> OUT
+
+    style REVIEWER fill:#fff3cd,stroke:#ffc107,color:#000
+    style GRAPH fill:#ede7f6,stroke:#9c27b0,color:#000
+    style FORENSICS fill:#e3f2fd,stroke:#1565c0,color:#000

@@ -12,7 +12,6 @@ This repository is the artefact for a Master's thesis at ITMO University: *"Deve
 
 Six 30-instance paired A/B cells on a fixed SWE-bench Lite subset, varying generator and judge:
 
-![Phase 5 forest plot](docs/figures/phase5_forest_plot.png)
 
 | Cell | Generator | Judge | A | B | Δ | t | Significant |
 |---|---|---|---|---|---|---|---|
@@ -28,8 +27,6 @@ Six 30-instance paired A/B cells on a fixed SWE-bench Lite subset, varying gener
 - The Reviewer Agent's contribution generalises across model families (DeepSeek, CodeLlama, Llama, Mistral) — not just Qwen, on which earlier phases were calibrated.
 - The lift scales with *refinability* rather than raw weakness. Mistral 7B is the most refine-responsive model tested, with a 20:1 lift-to-regression ratio in C4.
 - Judge family affects both absolute scoring and the lift magnitude. The same generator (qwen3-32b) judged by a same-family judge produced Δ = +0.003 (Phase 1); judged by gpt-oss-120b it produced Δ = +0.039 (C5) — a 13× change attributable purely to the judge.
-
-Full figures in [`docs/figures/`](docs/figures/). Detailed methodology and per-cell observations in [`progress.md`](progress.md). Weekend execution log in [`phase5_weekend_plan.md`](phase5_weekend_plan.md).
 
 ---
 

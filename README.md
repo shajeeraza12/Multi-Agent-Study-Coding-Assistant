@@ -4,7 +4,7 @@ A **Multi-Agent System (MAS)** built with **LangChain** and **LangGraph** that u
 
 This repository is the artefact for a Master's thesis at ITMO University: *"Development of a Lightweight Hallucination Detection Algorithm for the Reviewer Agent in a Code Generation Multi-Agent System."*
 
-**Status (June 2026):** Phase 1–5 complete. The Reviewer Agent's contribution is statistically supported on multiple generator families (Mistral 7B × qwen3-32b judge: Δ = +0.199, p < 0.001; qwen2.5:7b × qwen3-32b: Δ = +0.105, p < 0.05). See [Phase 5 Results](#phase-5-results) below or `progress.md` for the full timeline.
+**Status (June 2026):** Phase 1–5 complete. The Reviewer Agent's contribution is statistically supported on multiple generator families (Mistral 7B × qwen3-32b judge: Δ = +0.199, p < 0.001; qwen2.5:7b × qwen3-32b: Δ = +0.105, p < 0.05). See [Phase 5 Results](#phase-5-results) below.
 
 ---
 
